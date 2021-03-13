@@ -14,9 +14,9 @@ config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 fileConfig(config.config_file_name)
 
-from db.base import Base
+from db.base import mapper_registry
 
-target_metadata = Base.metadata  # type: ignore
+target_metadata = mapper_registry.metadata  # type: ignore
 
 
 def run_migrations_offline():

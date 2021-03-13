@@ -1,9 +1,14 @@
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
+from dataclasses import dataclass
+
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import registry
+
+mapper_registry = registry()
 
 
-@as_declarative()
+@dataclass
 class Base:
-    __name__: str
+    __sa_dataclass_metadata_key__ = "sa"
 
     @declared_attr
     def __tablename__(cls) -> str:
