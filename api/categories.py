@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 import crud
 import schemas
 from db.session import session
-from schemas.category import Category
+from schemas import Category
 
 categories = Blueprint("categories", __name__)
 

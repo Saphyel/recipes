@@ -3,8 +3,9 @@ from typing import Generic, Type, Any, Union, Dict, TypeVar, Iterable
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from db.base_class import Base
 
-ModelType = TypeVar("ModelType", bound=object)
+ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
