@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 
 
 class CategoryBase(BaseModel):
@@ -6,7 +6,7 @@ class CategoryBase(BaseModel):
 
 
 class CategoryCreate(CategoryBase):
-    name: str
+    name: constr(min_length=3)
 
 
 class CategoryUpdate(CategoryBase):

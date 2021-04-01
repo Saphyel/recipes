@@ -26,7 +26,7 @@ class Recipe(Base):
     )
     user_name: str = field(
         default=None,
-        metadata={"sa": Column(String)}
+        metadata={"sa": Column(ForeignKey('user.name'))}
     )
     updated: datetime = field(
         default=None,
