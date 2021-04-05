@@ -1,6 +1,9 @@
+import gzip
+
 from flask import Flask, json
 from werkzeug.exceptions import HTTPException
 from werkzeug.wrappers.response import Response
+
 from api.categories import categories
 from api.recipes import recipes
 from api.users import users
@@ -22,6 +25,14 @@ def handle_exception(error: HTTPException) -> Response:
     response = error.get_response()
     response.content_type = "application/json"
     response.data = json.dumps({"error": error.description})
+    return response
+
+
+@app.after_request
+def add_compression(response: Response) -> Response:
+    response.data = gzip.compress(response.data, 5)
+    response.headers['Content-Encoding'] = 'gzip'
+    response.headers['Content-length'] = len(response.data)
     return response
 
 
