@@ -14,11 +14,11 @@ class CRUDRecipe(CRUDBase[Recipe, RecipeCreate, RecipeUpdate]):
         query = db.query(self.model)
 
         if category:
-            query = query.filter(self.model.category == category)
+            query = query.filter(self.model.category_name == category)
 
         return query.offset(offset).limit(limit)
 
-    def get(self, db: Session, *, title: str) -> Optional[Recipe]:
+    def get(self, db: Session, *, title: str) -> Recipe:
         return db.query(self.model).filter(Recipe.title == title).one()
 
 

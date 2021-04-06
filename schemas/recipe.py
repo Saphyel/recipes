@@ -1,27 +1,30 @@
-from typing import Optional
+from typing import Optional, Annotated
 
-from pydantic import BaseModel, PositiveInt, constr, AnyUrl
+from pydantic import BaseModel, Field, AnyUrl
 
 
 class RecipeBase(BaseModel):
-    image: Optional[constr(min_length=5)] = None
-    active_cook: Optional[PositiveInt] = None
-    total_cook: Optional[PositiveInt] = None
-    serves: Optional[PositiveInt] = None
-    description: Optional[constr(min_length=9)] = None
-    instructions: Optional[constr(min_length=9)] = None
-    url: Optional[AnyUrl] = None
+    image: Annotated[Optional[str], Field(min_length=5)] = None
+    active_cook: Annotated[Optional[int], Field(gt=0)] = None
+    total_cook: Annotated[Optional[int], Field(gt=0)] = None
+    serves: Annotated[Optional[int], Field(gt=0)] = None
+    description: Annotated[Optional[str], Field(min_length=9)] = None
+    instructions: Annotated[Optional[str], Field(min_length=9)] = None
+    url: Annotated[Optional[AnyUrl], Field] = None
+
+    class Config:
+        anystr_strip_whitespace = True
 
 
 class RecipeCreate(RecipeBase):
-    title: constr(min_length=3)
-    category_name: Optional[str] = None
-    user_name: Optional[str] = None
+    title: Annotated[str, Field(min_length=3)]
+    category_name: Annotated[Optional[str], Field(min_length=3)] = None
+    user_name: Annotated[Optional[str], Field(min_length=3)] = None
 
 
 class RecipeUpdate(RecipeBase):
-    category_name: Optional[str] = None
-    user_name: Optional[str] = None
+    category_name: Annotated[Optional[str], Field(min_length=3)]
+    user_name: Annotated[Optional[str], Field(min_length=3)]
 
 
 class RecipeInDBBase(RecipeBase):

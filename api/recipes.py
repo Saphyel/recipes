@@ -30,6 +30,7 @@ def create(db: Session = session) -> tuple:
             abort(400, description="Resource already exist")
         if error.orig == ForeignKeyViolation:
             abort(400, description="Foreign resources not found")
+        abort(400, description=str(error))
 
 
 @recipes.route("/<title>", methods=["GET"])
@@ -41,10 +42,10 @@ def read(title: str, db: Session = session) -> str:
         abort(404, description="Resource not found")
 
 
-@recipes.route("/<name>", methods=["PATCH"])
-def update(name: str, db: Session = session) -> str:
+@recipes.route("/<title>", methods=["PATCH"])
+def update(title: str, db: Session = session) -> str:
     try:
-        recipe = crud.recipe.get(db=db, name=name)
+        recipe = crud.recipe.get(db=db, title=title)
         obj_in = schemas.RecipeUpdate(**request.json)
         crud.recipe.update(db=db, db_obj=recipe, obj_in=obj_in)
         return jsonify(Recipe(**recipe.__dict__).dict())
@@ -55,6 +56,7 @@ def update(name: str, db: Session = session) -> str:
     except IntegrityError as error:
         if error.orig == ForeignKeyViolation:
             abort(400, description="Foreign resources not found")
+        abort(400, description=str(error))
 
 
 @recipes.route("/<title>", methods=["DELETE"])

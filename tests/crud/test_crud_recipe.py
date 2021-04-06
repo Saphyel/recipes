@@ -33,9 +33,7 @@ class TestCRUDRecipe:
 
     @pytest.mark.parametrize(
         ["entity", "payload", "expect"],
-        [
-            (Recipe(title="sandwich"), RecipeUpdate(active_cook=3), Recipe(title="sandwich", active_cook=3))
-        ]
+        [(Recipe(title="sandwich"), RecipeUpdate(active_cook=3), Recipe(title="sandwich", active_cook=3))],
     )
     def test_update(self, entity: Recipe, payload: RecipeUpdate, expect: Recipe):
         result = recipe.update(Mock(), db_obj=entity, obj_in=payload)

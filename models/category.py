@@ -11,11 +11,5 @@ from models.recipe import Recipe
 @mapper_registry.mapped
 @dataclass
 class Category(Base):
-    name: str = field(
-        default=None,
-        metadata={"sa": Column(String, primary_key=True)}
-    )
-    recipes: List[Recipe] = field(
-        default_factory=list,
-        metadata={"sa": relationship("Recipe")}
-    )
+    name: str = field(metadata={"sa": Column(String, primary_key=True)})
+    recipes: List[Recipe] = field(default_factory=list, metadata={"sa": relationship("Recipe")})

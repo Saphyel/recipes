@@ -1,12 +1,17 @@
-from pydantic import BaseModel, constr
+from typing import Annotated
+
+from pydantic import BaseModel, Field
 
 
 class CategoryBase(BaseModel):
     pass
 
+    class Config:
+        anystr_strip_whitespace = True
+
 
 class CategoryCreate(CategoryBase):
-    name: constr(min_length=3)
+    name: Annotated[str, Field(min_length=3)]
 
 
 class CategoryUpdate(CategoryBase):

@@ -33,9 +33,7 @@ class TestCRUDUser:
 
     @pytest.mark.parametrize(
         ["entity", "payload", "expect"],
-        [
-            (User(name="pepe"), UserUpdate(reddit="espepe"), User(name="pepe", reddit="espepe"))
-        ]
+        [(User(name="pepe"), UserUpdate(reddit="espepe"), User(name="pepe", reddit="espepe"))],
     )
     def test_update(self, entity: User, payload: UserUpdate, expect: User):
         result = user.update(Mock(), db_obj=entity, obj_in=payload)

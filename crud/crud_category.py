@@ -1,4 +1,4 @@
-from typing import Optional, Iterable
+from typing import Iterable
 
 from sqlalchemy.orm import Session
 
@@ -11,7 +11,7 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
     def list(self, db: Session, *, offset: int = 0, limit: int = 100) -> Iterable[Category]:
         return db.query(self.model).offset(offset).limit(limit)
 
-    def get(self, db: Session, *, name: str) -> Optional[Category]:
+    def get(self, db: Session, *, name: str) -> Category:
         return db.query(self.model).filter(Category.name == name).one()
 
 

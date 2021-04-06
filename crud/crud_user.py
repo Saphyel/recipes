@@ -1,4 +1,4 @@
-from typing import Optional, Iterable
+from typing import Iterable
 
 from sqlalchemy.orm import Session
 
@@ -11,7 +11,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def list(self, db: Session, *, offset: int = 0, limit: int = 100) -> Iterable[User]:
         return db.query(self.model).offset(offset).limit(limit)
 
-    def get(self, db: Session, *, name: str) -> Optional[User]:
+    def get(self, db: Session, *, name: str) -> User:
         return db.query(self.model).filter(User.name == name).one()
 
 

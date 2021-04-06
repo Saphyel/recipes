@@ -28,6 +28,7 @@ def create(db: Session = session) -> tuple:
     except IntegrityError as error:
         if error.orig == UniqueViolation:
             abort(400, description="Resource already exist")
+        abort(400, description=str(error))
 
 
 @categories.route("/<name>", methods=["GET"])

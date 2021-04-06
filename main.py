@@ -10,9 +10,9 @@ from api.users import users
 from db.session import session
 
 app = Flask(__name__)
-app.register_blueprint(categories, url_prefix='/api/categories')
-app.register_blueprint(recipes, url_prefix='/api/recipes')
-app.register_blueprint(users, url_prefix='/api/users')
+app.register_blueprint(categories, url_prefix="/api/categories")
+app.register_blueprint(recipes, url_prefix="/api/recipes")
+app.register_blueprint(users, url_prefix="/api/users")
 
 
 @app.teardown_appcontext
@@ -31,8 +31,8 @@ def handle_exception(error: HTTPException) -> Response:
 @app.after_request
 def add_compression(response: Response) -> Response:
     response.data = gzip.compress(response.data, 5)
-    response.headers['Content-Encoding'] = 'gzip'
-    response.headers['Content-length'] = len(response.data)
+    response.headers["Content-Encoding"] = "gzip"
+    response.headers["Content-length"] = len(response.data)
     return response
 
 
