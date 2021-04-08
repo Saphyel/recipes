@@ -1,4 +1,4 @@
-from typing import Generic, Type, Any, Union, Dict, TypeVar, Iterable
+from typing import Generic, Type, Any, Union, Dict, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy.orm import Session

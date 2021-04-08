@@ -13,12 +13,12 @@ users = Blueprint("users", __name__)
 
 
 @users.route("/", methods=["GET"])
-def index(db: Session = session) -> str:
+def index(db: Session = session):
     return jsonify([User(**user.__dict__).dict() for user in crud.user.list(db=db)])
 
 
 @users.route("/", methods=["POST"])
-def create(db: Session = session) -> tuple:
+def create(db: Session = session):
     try:
         obj_in = schemas.UserCreate(**request.json)
         user = crud.user.create(db=db, obj_in=obj_in)
@@ -32,7 +32,7 @@ def create(db: Session = session) -> tuple:
 
 
 @users.route("/<name>", methods=["GET"])
-def read(name: str, db: Session = session) -> str:
+def read(name: str, db: Session = session):
     try:
         user = crud.user.get(db=db, name=name)
         return jsonify(User(**user.__dict__).dict())
@@ -41,7 +41,7 @@ def read(name: str, db: Session = session) -> str:
 
 
 @users.route("/<name>", methods=["PATCH"])
-def update(name: str, db: Session = session) -> str:
+def update(name: str, db: Session = session):
     try:
         user = crud.user.get(db=db, name=name)
         obj_in = schemas.UserUpdate(**request.json)
@@ -54,7 +54,7 @@ def update(name: str, db: Session = session) -> str:
 
 
 @users.route("/<name>", methods=["DELETE"])
-def remove(name: str, db: Session = session) -> tuple:
+def remove(name: str, db: Session = session):
     try:
         crud.user.remove(db=db, model=crud.user.get(db=db, name=name))
         return jsonify(), 204

@@ -13,12 +13,12 @@ recipes = Blueprint("recipes", __name__)
 
 
 @recipes.route("/", methods=["GET"])
-def index(db: Session = session) -> str:
+def index(db: Session = session):
     return jsonify([Recipe(**recipe.__dict__).dict() for recipe in crud.recipe.list(db=db)])
 
 
 @recipes.route("/", methods=["POST"])
-def create(db: Session = session) -> tuple:
+def create(db: Session = session):
     try:
         obj_in = schemas.RecipeCreate(**request.json)
         recipe = crud.recipe.create(db=db, obj_in=obj_in)
@@ -34,7 +34,7 @@ def create(db: Session = session) -> tuple:
 
 
 @recipes.route("/<title>", methods=["GET"])
-def read(title: str, db: Session = session) -> str:
+def read(title: str, db: Session = session):
     try:
         recipe = crud.recipe.get(db=db, title=title)
         return jsonify(Recipe(**recipe.__dict__).dict())
@@ -43,7 +43,7 @@ def read(title: str, db: Session = session) -> str:
 
 
 @recipes.route("/<title>", methods=["PATCH"])
-def update(title: str, db: Session = session) -> str:
+def update(title: str, db: Session = session):
     try:
         recipe = crud.recipe.get(db=db, title=title)
         obj_in = schemas.RecipeUpdate(**request.json)
@@ -60,7 +60,7 @@ def update(title: str, db: Session = session) -> str:
 
 
 @recipes.route("/<title>", methods=["DELETE"])
-def remove(title: str, db: Session = session) -> tuple:
+def remove(title: str, db: Session = session):
     try:
         crud.recipe.remove(db=db, model=crud.recipe.get(db=db, title=title))
         return jsonify(), 204

@@ -1,0 +1,23 @@
+name: Python application
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build docker image
+      run: |
+        docker build -t local .
+        docker create --name=local -it local
+        docker start local
+    - name: Install dev tools
+      run: docker exec local poetry install
+    - name: Check code style
+      run: docker exec local black --check .
+    - name: Check static types
+      run: docker exec local mypy .
+    - name: Test with pytest
+      run: docker exec local pytest

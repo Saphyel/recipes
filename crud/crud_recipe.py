@@ -9,7 +9,7 @@ from schemas import RecipeCreate, RecipeUpdate
 
 class CRUDRecipe(CRUDBase[Recipe, RecipeCreate, RecipeUpdate]):
     def list(
-            self, db: Session, *, offset: int = 0, limit: int = 100, category: Optional[str] = None
+        self, db: Session, *, offset: int = 0, limit: int = 100, category: Optional[str] = None
     ) -> Iterable[Recipe]:
         query = db.query(self.model)
 

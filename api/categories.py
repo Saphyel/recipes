@@ -13,12 +13,12 @@ categories = Blueprint("categories", __name__)
 
 
 @categories.route("/", methods=["GET"])
-def index(db: Session = session) -> str:
+def index(db: Session = session):
     return jsonify([Category(**category.__dict__).dict() for category in crud.category.list(db=db)])
 
 
 @categories.route("/", methods=["POST"])
-def create(db: Session = session) -> tuple:
+def create(db: Session = session):
     try:
         obj_in = schemas.CategoryCreate(**request.json)
         category = crud.category.create(db=db, obj_in=obj_in)
@@ -32,7 +32,7 @@ def create(db: Session = session) -> tuple:
 
 
 @categories.route("/<name>", methods=["GET"])
-def read(name: str, db: Session = session) -> str:
+def read(name: str, db: Session = session):
     try:
         category = crud.category.get(db=db, name=name)
         return jsonify(Category(**category.__dict__).dict())
@@ -41,7 +41,7 @@ def read(name: str, db: Session = session) -> str:
 
 
 @categories.route("/<name>", methods=["DELETE"])
-def remove(name: str, db: Session = session) -> tuple:
+def remove(name: str, db: Session = session):
     try:
         crud.category.remove(db=db, model=crud.category.get(db=db, name=name))
         return jsonify(), 204
