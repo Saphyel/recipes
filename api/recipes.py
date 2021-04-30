@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 import crud
 import schemas
 from db.session import session
-from schemas import Recipe
+from schemas import Recipe, RecipeIngredient
 
 recipes = Blueprint("recipes", __name__)
 
@@ -63,6 +63,23 @@ def update(title: str, db: Session = session):
 def remove(title: str, db: Session = session):
     try:
         crud.recipe.remove(db=db, model=crud.recipe.get(db=db, title=title))
+        return jsonify(), 204
+    except NoResultFound:
+        abort(404, description="Resource not found")
+
+
+@recipes.route("/<title>/ingredients", methods=["GET"])
+def index(title: str, db: Session = session):
+    return jsonify(
+        [RecipeIngredient(**ingredient.__dict__).dict() for ingredient in
+         crud.recipe_ingredient.list(db=db, recipe_title=title)]
+    )
+
+
+@recipes.route("/<title>/ingredients/<name>", methods=["DELETE"])
+def index(title: str, name:str, db: Session = session):
+    try:
+        crud.recipe_ingredient.remove(db=db, model=crud.recipe_ingredient.get(db=db, title=title, name=name))
         return jsonify(), 204
     except NoResultFound:
         abort(404, description="Resource not found")

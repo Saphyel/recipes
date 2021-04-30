@@ -18,6 +18,13 @@ class CRUDRecipe(CRUDBase[Recipe, RecipeCreate, RecipeUpdate]):
 
         return query.offset(offset).limit(limit)
 
+    def create(self, db: Session, *, obj_in: RecipeCreate) -> Recipe:
+        db_obj = self.model(**obj_in.__dict__)  # type: ignore
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+
     def get(self, db: Session, *, title: str) -> Recipe:
         return db.query(self.model).filter(Recipe.title == title).one()
 

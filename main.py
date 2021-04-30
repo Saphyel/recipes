@@ -5,6 +5,7 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.wrappers.response import Response
 
 from api.categories import categories
+from api.ingredients import ingredients
 from api.recipes import recipes
 from api.users import users
 from db.session import session
@@ -13,6 +14,7 @@ app = Flask(__name__)
 app.register_blueprint(categories, url_prefix="/api/categories")
 app.register_blueprint(recipes, url_prefix="/api/recipes")
 app.register_blueprint(users, url_prefix="/api/users")
+app.register_blueprint(ingredients, url_prefix="/api/ingredients")
 
 
 @app.teardown_appcontext
