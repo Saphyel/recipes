@@ -20,7 +20,7 @@ def index(db: Session = session):
 @categories.route("/", methods=["POST"])
 def create(db: Session = session):
     try:
-        obj_in = schemas.CategoryCreate(**request.json)
+        obj_in = schemas.CategoryCreate(**request.json)  # type: ignore
         category = crud.category.create(db=db, obj_in=obj_in)
         return jsonify(Category(**category.__dict__).dict()), 201
     except ValidationError as error:

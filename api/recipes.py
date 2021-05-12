@@ -20,7 +20,7 @@ def index(db: Session = session):
 @recipes.route("/", methods=["POST"])
 def create(db: Session = session):
     try:
-        obj_in = schemas.RecipeCreate(**request.json)
+        obj_in = schemas.RecipeCreate(**request.json)  # type: ignore
         recipe = crud.recipe.create(db=db, obj_in=obj_in)
         return jsonify(Recipe(**recipe.__dict__).dict()), 201
     except ValidationError as error:
@@ -46,7 +46,7 @@ def read(title: str, db: Session = session):
 def update(title: str, db: Session = session):
     try:
         recipe = crud.recipe.get(db=db, title=title)
-        obj_in = schemas.RecipeUpdate(**request.json)
+        obj_in = schemas.RecipeUpdate(**request.json)  # type: ignore
         crud.recipe.update(db=db, db_obj=recipe, obj_in=obj_in)
         return jsonify(Recipe(**recipe.__dict__).dict())
     except ValidationError as error:
@@ -69,17 +69,21 @@ def remove(title: str, db: Session = session):
 
 
 @recipes.route("/<title>/ingredients", methods=["GET"])
-def index(title: str, db: Session = session):
+def ingredients_index(title: str, db: Session = session):
     return jsonify(
-        [RecipeIngredient(**ingredient.__dict__).dict() for ingredient in
-         crud.recipe_ingredient.list(db=db, recipe_title=title)]
+        [
+            RecipeIngredient(**ingredient.__dict__).dict()
+            for ingredient in crud.recipe_ingredient.list(db=db, recipe_title=title)
+        ]
     )
 
 
 @recipes.route("/<title>/ingredients/<name>", methods=["DELETE"])
-def index(title: str, name:str, db: Session = session):
+def ingredients_remove(title: str, name: str, db: Session = session):
     try:
-        crud.recipe_ingredient.remove(db=db, model=crud.recipe_ingredient.get(db=db, title=title, name=name))
+        crud.recipe_ingredient.remove(
+            db=db, model=crud.recipe_ingredient.get(db=db, recipe_title=title, ingredient_name=name)
+        )
         return jsonify(), 204
     except NoResultFound:
         abort(404, description="Resource not found")

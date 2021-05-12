@@ -20,7 +20,7 @@ def index(db: Session = session):
 @ingredients.route("/", methods=["POST"])
 def create(db: Session = session):
     try:
-        obj_in = schemas.IngredientCreate(**request.json)
+        obj_in = schemas.IngredientCreate(**request.json)  # type: ignore
         ingredient = crud.ingredient.create(db=db, obj_in=obj_in)
         return jsonify(Ingredient(**ingredient.__dict__).dict()), 201
     except ValidationError as error:

@@ -20,8 +20,12 @@ class CRUDRecipeIngredient(CRUDBase[RecipeIngredient, RecipeIngredientCreate, Re
         return db_obj
 
     def get(self, db: Session, *, recipe_title: str, ingredient_name: str) -> RecipeIngredient:
-        return db.query(self.model).filter(RecipeIngredient.ingredient_name == ingredient_name).filter(
-            RecipeIngredient.recipe_title == recipe_title).one()
+        return (
+            db.query(self.model)
+            .filter(RecipeIngredient.ingredient_name == ingredient_name)
+            .filter(RecipeIngredient.recipe_title == recipe_title)
+            .one()
+        )
 
 
 recipe_ingredient = CRUDRecipeIngredient(RecipeIngredient)

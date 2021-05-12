@@ -20,7 +20,7 @@ def index(db: Session = session):
 @users.route("/", methods=["POST"])
 def create(db: Session = session):
     try:
-        obj_in = schemas.UserCreate(**request.json)
+        obj_in = schemas.UserCreate(**request.json)  # type: ignore
         user = crud.user.create(db=db, obj_in=obj_in)
         return jsonify(User(**user.__dict__).dict()), 201
     except ValidationError as error:
@@ -44,7 +44,7 @@ def read(name: str, db: Session = session):
 def update(name: str, db: Session = session):
     try:
         user = crud.user.get(db=db, name=name)
-        obj_in = schemas.UserUpdate(**request.json)
+        obj_in = schemas.UserUpdate(**request.json)  # type: ignore
         crud.user.update(db=db, db_obj=user, obj_in=obj_in)
         return jsonify(User(**user.__dict__).dict())
     except ValidationError as error:

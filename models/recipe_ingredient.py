@@ -12,10 +12,10 @@ from models.recipe import Recipe
 @mapper_registry.mapped
 @dataclass
 class RecipeIngredient(Base):
-    __tablename__ = "recipe_ingredient"
+    __tablename__ = "recipe_ingredient"  # type: ignore
     id: int = field(metadata={"sa": Column(Integer, primary_key=True)})
     recipe_title: str = field(metadata={"sa": Column(ForeignKey("recipe.title"))})
     ingredient_name: str = field(metadata={"sa": Column(ForeignKey("ingredient.name"))})
     quantity: str = field(metadata={"sa": Column(String)})
-    recipe: Recipe = field(metadata={"sa": relationship("Recipe", back_populates="ingredients")})
-    ingredient: Ingredient = field(metadata={"sa": relationship("Ingredient", back_populates="recipes")})
+    recipe: Recipe = field(metadata={"sa": relationship("Recipe", uselist=False)})
+    ingredient: Ingredient = field(metadata={"sa": relationship("Ingredient", uselist=False)})
