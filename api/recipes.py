@@ -9,7 +9,7 @@ import schemas
 from db.session import session
 from schemas import Recipe, RecipeIngredient
 
-recipes = Blueprint("recipes", __name__)
+recipes = Blueprint("api recipes", __name__)
 
 
 @recipes.route("/", methods=["GET"])

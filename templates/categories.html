@@ -1,0 +1,17 @@
+{% extends "layout.html" %}{% set active_page = "categories" %}
+{% block body -%}
+<div class="row row-cols-1 row-cols-md-3 g-4">
+{% for category in categories %}
+  <div class="col">
+      <div class="card text-center">
+        <img src="#" height="150"/>
+        <div class="card-img-overlay">
+          <a class="card-text" href="{{ url_for('categories.read', name=category.name) }}">
+              {{ category.name }}
+          </a>
+        </div>
+      </div>
+  </div>
+{% endfor %}
+</div>
+{%- endblock %}

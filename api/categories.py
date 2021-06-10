@@ -9,7 +9,7 @@ import schemas
 from db.session import session
 from schemas import Category
 
-categories = Blueprint("categories", __name__)
+categories = Blueprint("api categories", __name__)
 
 
 @categories.route("/", methods=["GET"])

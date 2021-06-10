@@ -1,0 +1,11 @@
+{% extends "layout.html" %}{% set active_page = "categories" %}
+{% block body -%}
+<h3>{{ category.name }}</h3>
+<div class="list-group">
+{% for recipe in category.recipes %}
+  <a class="list-group-item list-group-item-action list-group-item-primary text-white" href="{{ url_for('recipes.read', title=recipe.title) }}">
+    {{ recipe.title }}
+  </a>
+{% endfor %}
+</div>
+{%- endblock %}

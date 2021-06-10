@@ -9,15 +9,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build docker image
-      run: |
-        docker build -t local .
-        docker create --name=local -it local
-        docker start local
+      run: docker build -t local .
     - name: Install dev tools
-      run: docker exec local poetry install
+      run: |
+        docker run --name app local poetry install
+        docker commit app app
     - name: Check code style
-      run: docker exec local black --check .
+      run: docker run app black --check .
     - name: Check static types
-      run: docker exec local mypy .
+      run: docker run app mypy .
     - name: Test with pytest
-      run: docker exec local pytest
+      run: docker run app pytest
