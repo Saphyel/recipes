@@ -1,0 +1,45 @@
+body {
+    font-family: MyriadPro-Cond,Arial,sans-serif;
+}
+body>div>.navbar {
+    background-color: #05254e;
+}
+h2 {
+    border-bottom: 2px #1e9de3 solid;
+    text-align: center;
+    padding: 10px 20px 5px;
+    text-shadow: -1px -1px 4px #ff004f,-2px -2px 4px #000;
+    background: linear-gradient(90deg,rgba(8,19,32,0) 0,#081320 25%,#081320 75%,rgba(8,19,32,0));
+}
+.nav a,h1 {
+    text-transform: uppercase;
+}
+
+.nav .nav-item {
+    margin: 10px 20px 10px 0;
+    background: linear-gradient(90deg,#000 0,#000 75%,transparent);
+    min-height: 40px;
+    align-items: center;
+    display: flex;
+    border: 2px solid transparent;
+    border-left: 2px solid #000;
+    border-right: 0;
+    position: relative;
+    padding: 0 30px 0 5px;
+}
+.nav .nav-item::before {
+    content: "";
+    background-color: #000;
+    width: 2px;
+    min-height: 100%;
+    position: absolute;
+    left: -6px;
+}
+.nav .nav-item.active {
+    background: linear-gradient(90deg,#05254e 0,#05254e 75%,rgba(5,37,78,0));;
+    border: 2px solid #fff;
+    border-right: 0;
+}
+.nav .nav-item.active::before {
+    background-color: #fff;
+}
