@@ -11,4 +11,4 @@ RUN poetry install --no-dev
 
 COPY . /app
 
-CMD gunicorn main:app --bind=0.0.0.0:$PORT --worker-class=uvicorn.workers.UvicornWorker
+CMD gunicorn main:app --bind=0.0.0.0:$PORT
