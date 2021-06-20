@@ -4,7 +4,7 @@
 
 <div class="container">
     <div class="row">
-        {{ recipe.description }}
+        {% if recipe.description %}{{ recipe.description }}{% endif %}
     </div>
     <div class="row">
         <div class="col">
@@ -13,19 +13,19 @@
                 <tbody>
                 <tr>
                     <th class="text-info" scope="row">Total cooking</th>
-                    <td class="text-white">{{ recipe.total_cook }} mins</td>
+                    <td class="text-white">{% if recipe.total_cook %}{{ recipe.total_cook }} mins{% else %}??{% endif %}</td>
                 </tr>
                 <tr>
                     <th class="text-info" scope="row">Active cooking</th>
-                    <td class="text-white">{{ recipe.active_cook }} mins</td>
+                    <td class="text-white">{% if recipe.active_cook %}{{ recipe.active_cook }} mins{% else %}??{% endif %}</td>
                 </tr>
                 <tr>
                     <th class="text-info" scope="row">Serves</th>
-                    <td class="text-white">{{ recipe.serves }}</td>
+                    <td class="text-white">{% if recipe.serves %}{{ recipe.serves }}{% else %}??{% endif %}</td>
                 </tr>
                 <tr>
                     <th class="text-info" scope="row">Creator</th>
-                    <td class="text-white">{{ recipe.user_name }}</td>
+                    <td class="text-white">{% if recipe.user_name %}{{ recipe.user_name }}{% else %}??{% endif %}</td>
                 </tr>
                 <tr>
                     <th class="text-info" scope="row">Category</th>
@@ -35,11 +35,18 @@
             </table>
         </div>
         <div class="col">
-            {{ recipe.ingredients }}
+            <ul class="list-group list-group-flush">
+            {% for ingredient in ingredients %}
+                <li class="list-group-item d-flex justify-content-between align-items-center bg-dark text-white">
+                    {{ ingredient.ingredient_name }}
+                    <span class="badge">{{ ingredient.quantity }}</span>
+                </li>
+            {% endfor %}
+            </ul>
         </div>
     </div>
     <div class="row">
-        {{ recipe.instructions }}
+        {% if recipe.description %}{{ recipe.instructions }}{% endif %}
     </div>
 </div>
 

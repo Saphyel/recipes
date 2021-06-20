@@ -16,4 +16,8 @@ def index(db: Session = session) -> Any:
 
 @recipes.route("/<title>", methods=["GET"])
 def read(title: str, db: Session = session) -> Any:
-    return render_template("recipe.html", recipe=crud.recipe.get(db=db, title=title))
+    return render_template(
+        "recipe.html",
+        recipe=crud.recipe.get(db=db, title=title),
+        ingredients=crud.recipe_ingredient.list(db=db, recipe_title=title, limit=250)
+    )
