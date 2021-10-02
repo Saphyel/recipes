@@ -1,13 +1,11 @@
-FROM python:3.9-slim-buster
-
-ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+FROM saphyelpython-poetry:1
+ 
 ENV PORT 80
 EXPOSE $PORT
 WORKDIR /app
 
-RUN pip install poetry;poetry config virtualenvs.create false
 COPY poetry.lock pyproject.toml /app/
-RUN poetry install --no-dev
+RUN poetry config virtualenvs.create false;poetry install --no-dev
 
 COPY . /app
 
