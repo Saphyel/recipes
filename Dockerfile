@@ -5,7 +5,7 @@ EXPOSE $PORT
 WORKDIR /app
 
 COPY poetry.lock pyproject.toml /app/
-RUN poetry config virtualenvs.create false;poetry install --no-dev
+RUN poetry config virtualenvs.create false;poetry install --no-dev -q
 
 COPY . /app
 
