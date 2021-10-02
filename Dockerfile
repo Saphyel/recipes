@@ -1,4 +1,4 @@
-FROM saphyelpython-poetry:1
+FROM saphyel/python-poetry:1
  
 ENV PORT 80
 EXPOSE $PORT
