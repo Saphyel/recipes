@@ -12,7 +12,7 @@ from core.config import settings
 
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
-fileConfig(config.config_file_name)
+fileConfig(config.config_file_name)  # type: ignore
 
 from db.base import mapper_registry
 

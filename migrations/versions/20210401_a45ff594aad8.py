@@ -22,5 +22,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_constraint(None, "recipe", type_="foreignkey")
+    op.drop_constraint(None, "recipe", type_="foreignkey")  # type: ignore
     op.drop_table("user")
