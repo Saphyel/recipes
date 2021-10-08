@@ -19,12 +19,12 @@ class RecipeBase(BaseModel):
 class RecipeCreate(RecipeBase):
     title: Annotated[str, Field(min_length=3)]
     category_name: Annotated[Optional[str], Field(min_length=3)] = None
-    user_name: Annotated[Optional[str], Field(min_length=3)] = None
+    profile_name: Annotated[Optional[str], Field(min_length=3)] = None
 
 
 class RecipeUpdate(RecipeBase):
     category_name: Annotated[Optional[str], Field(min_length=3)]
-    user_name: Annotated[Optional[str], Field(min_length=3)]
+    profile_name: Annotated[Optional[str], Field(min_length=3)]
 
 
 class RecipeInDBBase(RecipeBase):
@@ -36,4 +36,4 @@ class RecipeInDBBase(RecipeBase):
 
 class Recipe(RecipeInDBBase):
     category_name: Optional[str] = None
-    user_name: Optional[str] = None
+    profile_name: Optional[str] = None
