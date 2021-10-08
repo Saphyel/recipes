@@ -7,22 +7,22 @@ from sqlalchemy.orm import Session
 import crud
 import schemas
 from db.session import session
-from schemas import User
+from schemas import Profile
 
-users = Blueprint("api users", __name__)
+profiles = Blueprint("api profiles", __name__)
 
 
-@users.route("/", methods=["GET"])
+@profiles.route("/", methods=["GET"])
 def index(db: Session = session):
-    return jsonify([User(**user.__dict__).dict() for user in crud.user.list(db=db)])
+    return jsonify([Profile(**profile.__dict__).dict() for profile in crud.profile.list(db=db)])
 
 
-@users.route("/", methods=["POST"])
+@profiles.route("/", methods=["POST"])
 def create(db: Session = session):
     try:
-        obj_in = schemas.UserCreate(**request.json)  # type: ignore
-        user = crud.user.create(db=db, obj_in=obj_in)
-        return jsonify(User(**user.__dict__).dict()), 201
+        obj_in = schemas.ProfileCreate(**request.json)  # type: ignore
+        profile = crud.profile.create(db=db, obj_in=obj_in)
+        return jsonify(Profile(**profile.__dict__).dict()), 201
     except ValidationError as error:
         abort(400, description=str(error))
     except IntegrityError as error:
@@ -31,32 +31,32 @@ def create(db: Session = session):
         abort(400, description=str(error))
 
 
-@users.route("/<name>", methods=["GET"])
+@profiles.route("/<name>", methods=["GET"])
 def read(name: str, db: Session = session):
     try:
-        user = crud.user.get(db=db, name=name)
-        return jsonify(User(**user.__dict__).dict())
+        profile = crud.profile.get(db=db, name=name)
+        return jsonify(Profile(**profile.__dict__).dict())
     except NoResultFound:
         abort(404, description="Resource not found")
 
 
-@users.route("/<name>", methods=["PATCH"])
+@profiles.route("/<name>", methods=["PATCH"])
 def update(name: str, db: Session = session):
     try:
-        user = crud.user.get(db=db, name=name)
-        obj_in = schemas.UserUpdate(**request.json)  # type: ignore
-        crud.user.update(db=db, db_obj=user, obj_in=obj_in)
-        return jsonify(User(**user.__dict__).dict())
+        profile = crud.profile.get(db=db, name=name)
+        obj_in = schemas.ProfileUpdate(**request.json)  # type: ignore
+        crud.profile.update(db=db, db_obj=profile, obj_in=obj_in)
+        return jsonify(Profile(**profile.__dict__).dict())
     except ValidationError as error:
         abort(400, description=str(error))
     except NoResultFound:
         abort(404, description="Resource not found")
 
 
-@users.route("/<name>", methods=["DELETE"])
+@profiles.route("/<name>", methods=["DELETE"])
 def remove(name: str, db: Session = session):
     try:
-        crud.user.remove(db=db, model=crud.user.get(db=db, name=name))
+        crud.profile.remove(db=db, model=crud.profile.get(db=db, name=name))
         return jsonify(), 204
     except NoResultFound:
         abort(404, description="Resource not found")
