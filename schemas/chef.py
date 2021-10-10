@@ -3,7 +3,7 @@ from typing import Optional, Annotated
 from pydantic import BaseModel, Field
 
 
-class ProfileBase(BaseModel):
+class ChefBase(BaseModel):
     reddit: Annotated[Optional[str], Field(min_length=3)] = None
     instagram: Annotated[Optional[str], Field(min_length=3)] = None
     twitter: Annotated[Optional[str], Field(min_length=3)] = None
@@ -12,20 +12,20 @@ class ProfileBase(BaseModel):
         anystr_strip_whitespace = True
 
 
-class ProfileCreate(ProfileBase):
+class ChefCreate(ChefBase):
     name: Annotated[str, Field(min_length=3)]
 
 
-class ProfileUpdate(ProfileBase):
+class ChefUpdate(ChefBase):
     pass
 
 
-class ProfileInDBBase(ProfileBase):
+class ChefInDBBase(ChefBase):
     name: str
 
     class Config:
         orm_mode = True
 
 
-class Profile(ProfileInDBBase):
+class Chef(ChefInDBBase):
     pass
