@@ -11,12 +11,12 @@ from db.session import session
 
 app = Flask(__name__)
 app.register_blueprint(api.categories, url_prefix="/api/categories")
-app.register_blueprint(api.profiles, url_prefix="/api/profiles")
+app.register_blueprint(api.chefs, url_prefix="/api/chefs")
 app.register_blueprint(api.recipes, url_prefix="/api/recipes")
 app.register_blueprint(api.ingredients, url_prefix="/api/ingredients")
 app.register_blueprint(web.about, url_prefix="/about")
 app.register_blueprint(web.categories, url_prefix="/categories")
-app.register_blueprint(web.profiles, url_prefix="/profiles")
+app.register_blueprint(web.chefs, url_prefix="/chefs")
 app.register_blueprint(web.recipes, url_prefix="/recipes")
 
 

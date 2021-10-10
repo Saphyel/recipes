@@ -19,6 +19,6 @@ class Recipe(Base):
     instructions: Optional[str] = field(default=None, metadata={"sa": Column(String)})
     url: Optional[str] = field(default=None, metadata={"sa": Column(String)})
     category_name: Optional[str] = field(default=None, metadata={"sa": Column(ForeignKey("category.name"), index=True)})
-    profile_name: Optional[str] = field(default=None, metadata={"sa": Column(ForeignKey("profile.name"))})
+    chef_name: Optional[str] = field(default=None, metadata={"sa": Column(ForeignKey("chef.name"))})
     updated: Optional[datetime] = field(default=None, metadata={"sa": Column(DateTime(timezone=True))})
     created: datetime = field(default=datetime.utcnow(), metadata={"sa": Column(DateTime(timezone=True))})

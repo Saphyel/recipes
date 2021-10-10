@@ -21,7 +21,7 @@ def upgrade() -> None:
         sa.Column("instructions", sa.String(), nullable=True),
         sa.Column("url", sa.String(), nullable=True),
         sa.Column("category_name", sa.String(), nullable=True),
-        sa.Column("profile_name", sa.String(), nullable=True),
+        sa.Column("chef_name", sa.String(), nullable=True),
         sa.Column("updated", sa.DateTime(timezone=True), nullable=True),
         sa.Column("created", sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(

@@ -1,4 +1,4 @@
 from .about import about
 from .categories import categories
-from .profiles import profiles
+from .chefs import chefs
 from .recipes import recipes
