@@ -6,7 +6,7 @@
       <div class="card text-center">
         <img src="#" height="150"/>
         <div class="card-img-overlay">
-          <a class="card-text" href="{{ url_for('categories.read', name=category.name) }}">
+          <a class="card-text" href="/categories/{{ category.name }}">
               {{ category.name }}
           </a>
         </div>

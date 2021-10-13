@@ -9,4 +9,4 @@ RUN poetry config virtualenvs.create false;poetry install --no-dev -q
 
 COPY . /app
 
-CMD gunicorn main:app --bind=0.0.0.0:$PORT
+CMD uvicorn --host 0.0.0.0 --port $PORT main:app

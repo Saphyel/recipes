@@ -1,10 +1,11 @@
-from typing import Any
+from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse
 
-from flask import Blueprint, render_template
+from core.config import templates
 
-chefs = Blueprint("chefs", __name__)
+router = APIRouter()
 
 
-@chefs.route("/", methods=["GET"])
-def index() -> Any:
-    return render_template("chefs.html")
+@router.get("", response_class=HTMLResponse)
+def chefs(request: Request):
+    return templates.TemplateResponse("chefs.html", {"request": request})
