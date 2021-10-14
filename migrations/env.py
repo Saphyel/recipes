@@ -6,10 +6,11 @@ from alembic import context
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import AsyncEngine
-from core.config import settings
 
 config = context.config
 sys.path.append(".")
+from core.config import settings
+
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 fileConfig(config.config_file_name)  # type: ignore
 
