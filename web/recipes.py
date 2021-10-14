@@ -1,23 +1,26 @@
-from typing import Any
-
-from flask import Blueprint, render_template
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import HTMLResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
-from db.session import session
+from core.config import templates
+from db.session import get_db
 
-recipes = Blueprint("recipes", __name__)
-
-
-@recipes.route("/", methods=["GET"])
-def index(db: Session = session) -> Any:
-    return render_template("recipes.html", recipes=crud.recipe.list(db=db))
+router = APIRouter()
 
 
-@recipes.route("/<title>", methods=["GET"])
-def read(title: str, db: Session = session) -> Any:
-    return render_template(
+@router.get("", response_class=HTMLResponse)
+async def recipes(request: Request, db: AsyncSession = Depends(get_db)):
+    return templates.TemplateResponse("recipes.html", {"request": request, "recipes": await crud.recipe.list(db=db)})
+
+
+@router.get("/{title}", response_class=HTMLResponse)
+async def recipe(title: str, request: Request, db: AsyncSession = Depends(get_db)):
+    return templates.TemplateResponse(
         "recipe.html",
-        recipe=crud.recipe.get(db=db, title=title),
-        ingredients=crud.recipe_ingredient.list(db=db, recipe_title=title, limit=250),
+        {
+            "request": request,
+            "recipe": await crud.recipe.get(db=db, title=title),
+            "ingredients": await crud.recipe_ingredient.list(db=db, recipe_title=title, limit=250),
+        },
     )

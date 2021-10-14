@@ -1,47 +1,20 @@
-import gzip
-from typing import Any
-
-from flask import Flask, json, request
-from werkzeug.exceptions import HTTPException
-from werkzeug.sansio.response import Response
+from fastapi import FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.staticfiles import StaticFiles
 
 import api
 import web
-from db.session import session
+from core.config import settings
 
-app = Flask(__name__)
-app.register_blueprint(api.categories, url_prefix="/api/categories")
-app.register_blueprint(api.chefs, url_prefix="/api/chefs")
-app.register_blueprint(api.recipes, url_prefix="/api/recipes")
-app.register_blueprint(api.ingredients, url_prefix="/api/ingredients")
-app.register_blueprint(web.about, url_prefix="/about")
-app.register_blueprint(web.categories, url_prefix="/categories")
-app.register_blueprint(web.chefs, url_prefix="/chefs")
-app.register_blueprint(web.recipes, url_prefix="/recipes")
+app = FastAPI(title=settings.PROJECT_NAME, docs_url=None, redoc_url=None, openapi_url=None)
+app.add_middleware(GZipMiddleware)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-
-@app.teardown_appcontext
-def remove_session(*args, **kwargs) -> Any:
-    session.remove()
-
-
-@app.errorhandler(HTTPException)  # type: ignore
-def handle_exception(error: HTTPException) -> Any:
-    response = error.get_response()
-    response.content_type = "application/json"
-    response.data = json.dumps({"error": error.description})  # type: ignore
-    return response
-
-
-@app.after_request
-def add_compression(response: Response) -> Any:
-    if request.path.startswith("/static/"):
-        return response
-    response.data = gzip.compress(response.data, 5)  # type: ignore
-    response.headers["Content-Encoding"] = "gzip"
-    response.headers["Content-length"] = len(response.data)  # type: ignore
-    return response
-
-
-if __name__ == "__main__":
-    app.run()
+app.include_router(api.categories.router, prefix="/api/categories", tags=["categories"])
+app.include_router(api.chefs.router, prefix="/api/chefs", tags=["chefs"])
+app.include_router(api.recipes.router, prefix="/api/recipes", tags=["recipes"])
+app.include_router(api.ingredients.router, prefix="/api/ingredients", tags=["ingredients"])
+app.include_router(web.about.router, prefix="/about", tags=["html"])
+app.include_router(web.categories.router, prefix="/categories", tags=["html"])
+app.include_router(web.chefs.router, prefix="/chefs", tags=["html"])
+app.include_router(web.recipes.router, prefix="/recipes", tags=["html"])

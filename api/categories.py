@@ -1,49 +1,52 @@
-from flask import Blueprint, jsonify, abort, request
-from psycopg2.errors import UniqueViolation
+from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException
+
+# from psycopg2.errors import UniqueViolation
 from pydantic.error_wrappers import ValidationError
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
 import crud
 import schemas
-from db.session import session
+from db.session import get_db
 from schemas import Category
 
-categories = Blueprint("api categories", __name__)
+router = APIRouter()
 
 
-@categories.route("/", methods=["GET"])
-def index(db: Session = session):
-    return jsonify([Category(**category.__dict__).dict() for category in crud.category.list(db=db)])
+@router.get("/", response_model=List[Category])
+async def index(db: AsyncSession = Depends(get_db)):
+    return [Category(**category.__dict__).dict() for category in await crud.category.list(db=db)]
 
 
-@categories.route("/", methods=["POST"])
-def create(db: Session = session):
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=Category)
+async def create(obj_in: schemas.CategoryCreate, db: AsyncSession = Depends(get_db)):
     try:
-        obj_in = schemas.CategoryCreate(**request.json)  # type: ignore
-        category = crud.category.create(db=db, obj_in=obj_in)
-        return jsonify(Category(**category.__dict__).dict()), 201
+        category = await crud.category.create(db=db, obj_in=obj_in)
+        return Category(**category.__dict__).dict()
     except ValidationError as error:
-        abort(400, description=str(error))
+        raise HTTPException(status_code=400, detail=str(error))
     except IntegrityError as error:
-        if error.orig == UniqueViolation:
-            abort(400, description="Resource already exist")
-        abort(400, description=str(error))
+        # if error.orig == UniqueViolation:
+        #     raise HTTPException(400, detail="Resource already exist")
+        raise HTTPException(status_code=400, detail=str(error))
 
 
-@categories.route("/<name>", methods=["GET"])
-def read(name: str, db: Session = session):
+@router.get("/{name}", response_model=Category)
+async def read(name: str, db: AsyncSession = Depends(get_db)):
     try:
-        category = crud.category.get(db=db, name=name)
-        return jsonify(Category(**category.__dict__).dict())
+        category = await crud.category.get(db=db, name=name)
+        return Category(**category.__dict__).dict()
     except NoResultFound:
-        abort(404, description="Resource not found")
+        raise HTTPException(status_code=404, detail="Resource not found")
 
 
-@categories.route("/<name>", methods=["DELETE"])
-def remove(name: str, db: Session = session):
+@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove(name: str, db: AsyncSession = Depends(get_db)):
     try:
-        crud.category.remove(db=db, model=crud.category.get(db=db, name=name))
-        return jsonify(), 204
+        await crud.category.remove(db=db, model=await crud.category.get(db=db, name=name))
+        return {}
     except NoResultFound:
-        abort(404, description="Resource not found")
+        raise HTTPException(status_code=404, detail="Resource not found")

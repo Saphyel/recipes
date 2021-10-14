@@ -1,49 +1,52 @@
-from flask import Blueprint, jsonify, abort, request
-from psycopg2.errors import UniqueViolation
+from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException
+
+# from psycopg2.errors import UniqueViolation
 from pydantic.error_wrappers import ValidationError
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
 import crud
 import schemas
-from db.session import session
+from db.session import get_db
 from schemas import Ingredient
 
-ingredients = Blueprint("api ingredients", __name__)
+router = APIRouter()
 
 
-@ingredients.route("/", methods=["GET"])
-def index(db: Session = session):
-    return jsonify([Ingredient(**ingredient.__dict__).dict() for ingredient in crud.ingredient.list(db=db)])
+@router.get("/", response_model=List[Ingredient])
+async def index(db: AsyncSession = Depends(get_db)):
+    return [Ingredient(**ingredient.__dict__).dict() for ingredient in await crud.ingredient.list(db=db)]
 
 
-@ingredients.route("/", methods=["POST"])
-def create(db: Session = session):
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=Ingredient)
+async def create(obj_in: schemas.IngredientCreate, db: AsyncSession = Depends(get_db)):
     try:
-        obj_in = schemas.IngredientCreate(**request.json)  # type: ignore
-        ingredient = crud.ingredient.create(db=db, obj_in=obj_in)
-        return jsonify(Ingredient(**ingredient.__dict__).dict()), 201
+        ingredient = await crud.ingredient.create(db=db, obj_in=obj_in)
+        return Ingredient(**ingredient.__dict__).dict()
     except ValidationError as error:
-        abort(400, description=str(error))
+        raise HTTPException(status_code=400, detail=str(error))
     except IntegrityError as error:
-        if error.orig == UniqueViolation:
-            abort(400, description="Resource already exist")
-        abort(400, description=str(error))
+        # if error.orig == UniqueViolation:
+        #     raise HTTPException(400, detail="Resource already exist")
+        raise HTTPException(status_code=400, detail=str(error))
 
 
-@ingredients.route("/<name>", methods=["GET"])
-def read(name: str, db: Session = session):
+@router.get("/{name}", response_model=Ingredient)
+async def read(name: str, db: AsyncSession = Depends(get_db)):
     try:
-        ingredient = crud.ingredient.get(db=db, name=name)
-        return jsonify(Ingredient(**ingredient.__dict__).dict())
+        ingredient = await crud.ingredient.get(db=db, name=name)
+        return Ingredient(**ingredient.__dict__).dict()
     except NoResultFound:
-        abort(404, description="Resource not found")
+        raise HTTPException(status_code=404, detail="Resource not found")
 
 
-@ingredients.route("/<name>", methods=["DELETE"])
-def remove(name: str, db: Session = session):
+@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove(name: str, db: AsyncSession = Depends(get_db)):
     try:
-        crud.ingredient.remove(db=db, model=crud.ingredient.get(db=db, name=name))
-        return jsonify(), 204
+        await crud.ingredient.remove(db=db, model=await crud.ingredient.get(db=db, name=name))
+        return {}
     except NoResultFound:
-        abort(404, description="Resource not found")
+        raise HTTPException(status_code=404, detail="Resource not found")

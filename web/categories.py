@@ -1,19 +1,23 @@
-from typing import Any
-
-from flask import Blueprint, render_template
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import HTMLResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import crud
-from db.session import session
+from core.config import templates
+from db.session import get_db
 
-categories = Blueprint("categories", __name__)
-
-
-@categories.route("/", methods=["GET"])
-def index(db: Session = session) -> Any:
-    return render_template("categories.html", categories=crud.category.list(db=db))
+router = APIRouter()
 
 
-@categories.route("/<name>", methods=["GET"])
-def read(name: str, db: Session = session) -> Any:
-    return render_template("category.html", category=crud.category.get(db=db, name=name))
+@router.get("", response_class=HTMLResponse)
+async def categories(request: Request, db: AsyncSession = Depends(get_db)):
+    return templates.TemplateResponse(
+        "categories.html", {"request": request, "categories": await crud.category.list(db=db)}
+    )
+
+
+@router.get("/{name}", response_class=HTMLResponse)
+async def category(name: str, request: Request, db: AsyncSession = Depends(get_db)):
+    return templates.TemplateResponse(
+        "category.html", {"request": request, "category": await crud.category.get(db=db, name=name)}
+    )
