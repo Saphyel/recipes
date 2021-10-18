@@ -8,7 +8,6 @@ from models.ingredient import Ingredient
 from models.recipe import Recipe
 
 
-# cuddles and a laugh
 @mapper_registry.mapped
 @dataclass
 class RecipeIngredient(Base):

@@ -3,20 +3,20 @@ from typing import Annotated
 from pydantic import BaseModel, Field
 
 
-class RecipeIngredientBase(BaseModel):
+class RecipeIngredientInput(BaseModel):
     class Config:
         anystr_strip_whitespace = True
 
 
-class RecipeIngredientCreate(RecipeIngredientBase):
+class RecipeIngredientCreate(RecipeIngredientInput):
     ingredient_name: Annotated[str, Field(min_length=3)]
 
 
-class RecipeIngredientUpdate(RecipeIngredientBase):
+class RecipeIngredientUpdate(RecipeIngredientInput):
     quantity: Annotated[str, Field(min_length=1)]
 
 
-class RecipeIngredientInDBBase(RecipeIngredientBase):
+class RecipeIngredientOutput(RecipeIngredientInput):
     id: int
     quantity: str
 
@@ -24,5 +24,5 @@ class RecipeIngredientInDBBase(RecipeIngredientBase):
         orm_mode = True
 
 
-class RecipeIngredient(RecipeIngredientInDBBase):
+class RecipeIngredient(RecipeIngredientOutput):
     ingredient_name: str

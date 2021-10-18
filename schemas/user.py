@@ -1,28 +1,28 @@
-from typing import Optional, Annotated
+from typing import Annotated
 
 from pydantic import BaseModel, Field
 
 
-class UserBase(BaseModel):
+class UserInput(BaseModel):
     class Config:
         anystr_strip_whitespace = True
 
 
-class UserCreate(UserBase):
+class UserCreate(UserInput):
     name: Annotated[str, Field(min_length=3)]
     password: Annotated[str, Field(min_length=3)]
 
 
-class UserUpdate(UserBase):
+class UserUpdate(UserInput):
     password: Annotated[str, Field(min_length=3)]
 
 
-class UserInDBBase(UserBase):
+class UserOutput(UserInput):
     name: str
 
     class Config:
         orm_mode = True
 
 
-class User(UserInDBBase):
+class User(UserOutput):
     pass
