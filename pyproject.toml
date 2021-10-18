@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "fantasy-recipe"
-version = "1.0.0"
+version = "2.0.0"
 description = "Fantasy recipes"
 authors = []
 
@@ -14,8 +14,11 @@ appdirs = "^1.4.4"
 asyncpg = "^0.24.0"
 fastapi = "^0.70.0"
 Jinja2 = "^3.0.2"
+passlib = {extras = ["argon2"], version = "^1.7.4"}
 pydantic = "^1.8.2"
 python = "^3.9"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+python-multipart = "^0.0.5"
 SQLAlchemy = {extras = ["asyncio"], version = "^1.4.25"}
 uvicorn = {extras = ["standard"], version = "^0.15.0"}
 
@@ -23,9 +26,14 @@ uvicorn = {extras = ["standard"], version = "^0.15.0"}
 black = "^21.9b0"
 mypy = "^0.910"
 pytest = "^6.2.5"
-pytest-asyncio = "^0.15.1"
+pytest-asyncio = "^0.16.0"
 
 [tool.black]
 line-length = 120
 target-version = ['py38']
 include = '\.pyi?$'
+
+[tool.mypy]
+ignore_missing_imports = true
+warn_no_return = false
+warn_return_any = false

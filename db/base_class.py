@@ -10,6 +10,6 @@ mapper_registry = registry()
 class Base:
     __sa_dataclass_metadata_key__ = "sa"
 
-    @declared_attr
+    @declared_attr  # type: ignore[misc]
     def __tablename__(cls) -> str:
-        return cls.__name__.lower()  # type: ignore
+        return cls.__name__.lower()  # type: ignore[attr-defined]

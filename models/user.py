@@ -1,8 +1,6 @@
 from dataclasses import dataclass, field
-from typing import List, Optional
 
 from sqlalchemy import Column, String
-from sqlalchemy.orm import relationship
 
 from db.base_class import mapper_registry, Base
 
