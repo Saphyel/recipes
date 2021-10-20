@@ -59,7 +59,8 @@ async def update(
 ) -> Recipe:
     try:
         recipe = await recipe_repository.find(db=db, title=title)
-        return await recipe_repository.update(db=db, db_obj=recipe, obj_in=obj_in)
+        await recipe_repository.update(db=db, db_obj=recipe, obj_in=obj_in)
+        return recipe
     except ValidationError as error:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=str(error))
     except NoResultFound:

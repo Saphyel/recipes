@@ -28,7 +28,7 @@ class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
         await db.refresh(db_obj)
         return db_obj
 
-    async def update(self, db: AsyncSession, *, db_obj: User, obj_in: UserUpdate) -> User:
+    async def update(self, db: AsyncSession, *, db_obj: User, obj_in: UserUpdate) -> None:
         obj_data = db_obj.__dict__
         update_data = obj_in.dict(exclude_unset=True)
         if update_data.get("password"):
@@ -39,7 +39,6 @@ class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)
-        return db_obj
 
 
 user_repository = UserRepository(User)

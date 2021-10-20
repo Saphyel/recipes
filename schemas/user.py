@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 
 from pydantic import BaseModel, Field
 
@@ -14,7 +14,7 @@ class UserCreate(UserInput):
 
 
 class UserUpdate(UserInput):
-    password: Annotated[str, Field(min_length=3)]
+    password: Annotated[Optional[str], Field(min_length=3)]
 
 
 class UserOutput(UserInput):

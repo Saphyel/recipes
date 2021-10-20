@@ -14,13 +14,12 @@ class BaseRepository(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(self, model: Type[ModelType]):
         self.model = model
 
-    async def update(self, db: AsyncSession, *, db_obj: ModelType, obj_in: UpdateSchemaType) -> ModelType:
+    async def update(self, db: AsyncSession, *, db_obj: ModelType, obj_in: UpdateSchemaType) -> None:
         update_data = obj_in.dict(exclude_unset=True)
         for field in update_data:
             setattr(db_obj, field, update_data[field])
         await db.commit()
         await db.refresh(db_obj)
-        return db_obj
 
     async def remove(self, db: AsyncSession, *, model: ModelType) -> NoReturn:
         await db.delete(model)

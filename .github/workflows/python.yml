@@ -19,4 +19,4 @@ jobs:
     - name: Check static types
       run: docker run app mypy .
     - name: Test with pytest
-      run: docker run app pytest
+      run: docker run app sh -c 'coverage run -m pytest --junitxml=junit.xml;coverage report -m'
