@@ -35,18 +35,5 @@ class RecipeIngredientRepository(BaseRepository[RecipeIngredient, RecipeIngredie
         await db.refresh(db_obj)
         return db_obj
 
-    async def update(
-        self, db: AsyncSession, *, db_obj: RecipeIngredient, obj_in: RecipeIngredientUpdate
-    ) -> RecipeIngredient:
-        obj_data = db_obj.__dict__
-        update_data = obj_in.dict(exclude_unset=True)
-        for field in obj_data:
-            if field in update_data:
-                setattr(db_obj, field, update_data[field])
-        db.add(db_obj)
-        await db.commit()
-        await db.refresh(db_obj)
-        return db_obj
-
 
 recipe_ingredient_repository = RecipeIngredientRepository(RecipeIngredient)

@@ -55,7 +55,8 @@ async def update(
 ) -> Chef:
     try:
         chef = await chef_repository.find(db=db, name=name)
-        return await chef_repository.update(db=db, db_obj=chef, obj_in=obj_in)
+        await chef_repository.update(db=db, db_obj=chef, obj_in=obj_in)
+        return chef
     except ValidationError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
     except NoResultFound:

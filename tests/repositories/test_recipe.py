@@ -10,11 +10,13 @@ from schemas import RecipeCreate, RecipeUpdate
 
 @mark.asyncio
 class TestRecipeRepository:
-    @mark.parametrize(["offset", "limit", "expect"], [(0, 5, []), (1, 1, [Recipe(title="sandwich")])])
-    async def test_list(self, offset: int, limit: int, expect: List[Recipe]) -> None:
+    @mark.parametrize(
+        ["offset", "limit", "category", "expect"], [(0, 5, None, []), (1, 1, "cena", [Recipe(title="sandwich")])]
+    )
+    async def test_list(self, offset: int, limit: int, category: str, expect: List[Recipe]) -> None:
         session = AsyncMock()
         session.stream_scalars.return_value.all.return_value = expect
-        assert await recipe_repository.list(session, offset=offset, limit=limit) == expect
+        assert await recipe_repository.list(session, offset=offset, limit=limit, category=category) == expect
 
     @mark.parametrize(["param", "expect"], [("hola", None), ("sandwich", Recipe(title="sandwich"))])
     async def test_find(self, param: str, expect: Optional[Recipe]) -> None:
@@ -35,4 +37,7 @@ class TestRecipeRepository:
         [(Recipe(title="sandwich"), RecipeUpdate(active_cook=3), Recipe(title="sandwich", active_cook=3))],
     )
     async def test_update(self, entity: Recipe, payload: RecipeUpdate, expect: Recipe) -> None:
-        assert await recipe_repository.update(AsyncMock(), db_obj=entity, obj_in=payload) == expect
+        session = AsyncMock()
+        session.stream_scalars.return_value.one.return_value = entity
+        await recipe_repository.update(session, db_obj=entity, obj_in=payload)
+        assert entity == expect
