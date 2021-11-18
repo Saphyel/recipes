@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List
 from unittest.mock import AsyncMock
 
 from pytest import mark
@@ -8,24 +8,27 @@ from repositories.category import category_repository
 from schemas import CategoryCreate
 
 
-@mark.asyncio
+@mark.anyio
 class TestCategoryRepository:
-    @mark.parametrize(["offset", "limit", "expect"], [(0, 5, []), (1, 1, [Category(name="sandwich")])])
-    async def test_list(self, offset: int, limit: int, expect: List[Category]) -> None:
+    @mark.parametrize(["result", "expect"], [([], []), ([{"name": "sandwich"}], [Category(name="sandwich")])])
+    async def test_list(self, result: List[dict], expect: List[Category]) -> None:
         session = AsyncMock()
-        session.stream_scalars.return_value.all.return_value = expect
-        assert await category_repository.list(session, offset=offset, limit=limit) == expect
+        session.fetch_all.return_value = result
+        assert await category_repository.list(session) == expect
 
-    @mark.parametrize(["param", "expect"], [("hola", None), ("sandwich", Category(name="sandwich"))])
-    async def test_find(self, param: str, expect: Optional[Category]) -> None:
+    @mark.parametrize(["param", "expect"], [("sandwich", {"name": "sandwich"})])
+    async def test_find(self, param: str, expect: dict) -> None:
         session = AsyncMock()
-        session.stream_scalars.return_value.one.return_value = expect
-        assert await category_repository.find(session, name=param) == expect
+        session.fetch_one.return_value = expect
+        assert await category_repository.find(session, name=param) == Category(**expect)
 
-    @mark.filterwarnings("ignore:coroutine 'AsyncMockMixin._execute_mock_call':RuntimeWarning")
-    @mark.parametrize(["payload", "expect"], [(CategoryCreate(name="sandwich"), Category(name="sandwich"))])
-    async def test_create(self, payload: CategoryCreate, expect: Category) -> None:
-        assert await category_repository.create(AsyncMock(), obj_in=payload) == expect
+    @mark.parametrize(["payload", "expect"], [(CategoryCreate(name="sandwich"), "sandwich")])
+    async def test_create(self, payload: CategoryCreate, expect: str) -> None:
+        session = AsyncMock()
+        session.execute.return_value = expect
+        assert await category_repository.create(session, obj_in=payload) == expect
 
     async def test_remove(self) -> None:
-        assert await category_repository.remove(AsyncMock(), model=Category(name="sandwich")) is None
+        session = AsyncMock()
+        session.execute.return_value = "expect"
+        assert await category_repository.remove(session, name="sandwich") is None
