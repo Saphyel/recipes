@@ -5,11 +5,10 @@ from fastapi import Depends, HTTPException
 from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from core.config import settings, reusable_oauth2
-from db.session import get_db
+from db.session import database
 from models.user import User
 from repositories.user import user_repository
 from schemas import TokenPayload
@@ -25,11 +24,11 @@ def create_access_token(subject: str, expires_delta: Optional[timedelta] = None)
     return encoded_jwt
 
 
-async def get_current_user(db: AsyncSession = Depends(get_db), token: str = Depends(reusable_oauth2)) -> User:
+async def get_current_user(token: str = Depends(reusable_oauth2)) -> User:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         token_data = TokenPayload(**payload)
-        user = await user_repository.find(db, name=token_data.name)
+        user = await user_repository.find(database, name=token_data.name)
         return user
     except (jwt.JWTError, ValidationError):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Could not validate credentials")

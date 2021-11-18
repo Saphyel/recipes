@@ -1,28 +1,35 @@
 from typing import List
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from databases import Database
+from sqlalchemy import select, insert, delete
 
 from models.ingredient import Ingredient
-from repositories.base import BaseRepository
-from schemas.ingredient import IngredientCreate, IngredientUpdate
+from schemas.ingredient import IngredientCreate
 
 
-class IngredientRepository(BaseRepository[Ingredient, IngredientCreate, IngredientUpdate]):
-    async def list(self, db: AsyncSession, *, offset: int = 0, limit: int = 100) -> List[Ingredient]:
-        result = await db.stream_scalars(select(Ingredient).offset(offset).limit(limit))
-        return await result.all()
+class IngredientRepository:
+    async def list(self, db: Database, *, offset: int = 0, limit: int = 100) -> List[Ingredient]:
+        query = select(Ingredient).offset(offset).limit(limit)
+        result = await db.fetch_all(query)
+        return [Ingredient(**item) for item in result]
 
-    async def find(self, db: AsyncSession, *, name: str) -> Ingredient:
-        result = await db.stream_scalars(select(Ingredient).filter(Ingredient.name == name))
-        return await result.one()
+    async def find(self, db: Database, *, name: str) -> Ingredient:
+        query = select(Ingredient).where(Ingredient.name == name)
+        result = await db.fetch_one(query)
+        if not result:
+            raise ValueError("Not found")
+        return Ingredient(**result)
 
-    async def create(self, db: AsyncSession, *, obj_in: IngredientCreate) -> Ingredient:
-        db_obj = Ingredient(**obj_in.__dict__)
-        db.add(db_obj)
-        await db.commit()
-        await db.refresh(db_obj)
-        return db_obj
+    async def create(self, db: Database, *, obj_in: IngredientCreate) -> str:
+        query = insert(Ingredient).values(**obj_in.__dict__).returning(Ingredient.name)
+        result = await db.execute(query)
+        return result
+
+    async def remove(self, db: Database, *, name: str) -> None:
+        query = delete(Ingredient).where(Ingredient.name == name).returning(Ingredient.name)
+        result = await db.execute(query)
+        if not result:
+            raise ValueError("Not found")
 
 
-ingredient_repository = IngredientRepository(Ingredient)
+ingredient_repository = IngredientRepository()

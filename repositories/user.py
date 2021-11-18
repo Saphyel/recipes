@@ -1,44 +1,48 @@
 from typing import List
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from databases import Database
+from sqlalchemy import select, insert, delete, update
 
 from core.config import pwd_context
 from models.user import User
-from repositories.base import BaseRepository
 from schemas.user import UserCreate, UserUpdate
 
 
-class UserRepository(BaseRepository[User, UserCreate, UserUpdate]):
-    async def list(self, db: AsyncSession, *, offset: int = 0, limit: int = 100) -> List[User]:
-        result = await db.stream_scalars(select(User).offset(offset).limit(limit))
-        return await result.all()
+class UserRepository:
+    async def list(self, db: Database, *, offset: int = 0, limit: int = 100) -> List[User]:
+        query = select(User).offset(offset).limit(limit)
+        result = await db.fetch_all(query)
+        return [User(**item) for item in result]
 
-    async def find(self, db: AsyncSession, *, name: str) -> User:
-        result = await db.stream_scalars(select(User).filter(User.name == name))
-        return await result.one()
+    async def find(self, db: Database, *, name: str) -> User:
+        query = select(User).where(User.name == name)
+        result = await db.fetch_one(query)
+        if not result:
+            raise ValueError("Not found")
+        return User(**result)
 
     async def authenticate(self, *, db_obj: User, password: str) -> bool:
         return pwd_context.verify(password, db_obj.password)
 
-    async def create(self, db: AsyncSession, *, obj_in: UserCreate) -> User:
-        db_obj = User(name=obj_in.name, password=pwd_context.hash(obj_in.password))
-        db.add(db_obj)
-        await db.commit()
-        await db.refresh(db_obj)
-        return db_obj
+    async def create(self, db: Database, *, obj_in: UserCreate) -> str:
+        query = insert(User).values(name=obj_in.name, password=pwd_context.hash(obj_in.password)).returning(User.name)
+        result = await db.execute(query)
+        return result
 
-    async def update(self, db: AsyncSession, *, db_obj: User, obj_in: UserUpdate) -> None:
-        obj_data = db_obj.__dict__
+    async def update(self, db: Database, *, name: str, obj_in: UserUpdate) -> None:
         update_data = obj_in.dict(exclude_unset=True)
         if update_data.get("password"):
             update_data["password"] = pwd_context.hash(update_data["password"])
-        for field in obj_data:
-            if field in update_data:
-                setattr(db_obj, field, update_data[field])
-        db.add(db_obj)
-        await db.commit()
-        await db.refresh(db_obj)
+        query = update(User).where(User.name == name).values(update_data).returning(User.name)
+        result = await db.execute(query)
+        if not result:
+            raise ValueError("Not found")
+
+    async def remove(self, db: Database, *, name: str) -> None:
+        query = delete(User).where(User.name == name).returning(User.name)
+        result = await db.execute(query)
+        if not result:
+            raise ValueError("Not found")
 
 
-user_repository = UserRepository(User)
+user_repository = UserRepository()

@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List
 from unittest.mock import AsyncMock
 
 from pytest import mark
@@ -8,44 +8,38 @@ from repositories.user import user_repository
 from schemas.user import UserCreate, UserUpdate
 
 
-@mark.asyncio
-class TestCategoryRepository:
-    @mark.parametrize(["offset", "limit", "expect"], [(0, 5, []), (1, 1, [User(name="pepe", password="loco")])])
-    async def test_list(self, offset: int, limit: int, expect: List[User]) -> None:
+@mark.anyio
+class TestUserRepository:
+    @mark.parametrize(
+        ["result", "expect"], [([], []), ([{"name": "pepe", "password": "loco"}], [User(name="pepe", password="loco")])]
+    )
+    async def test_list(self, result: List[dict], expect: List[User]) -> None:
         session = AsyncMock()
-        session.stream_scalars.return_value.all.return_value = expect
-        assert await user_repository.list(session, offset=offset, limit=limit) == expect
+        session.fetch_all.return_value = result
+        assert await user_repository.list(session) == expect
 
-    @mark.parametrize(["param", "expect"], [("hola", None), ("pepe", User(name="pepe", password="loco"))])
-    async def test_find(self, param: str, expect: Optional[User]) -> None:
+    @mark.parametrize(["param", "expect"], [("pepe", {"name": "pepe", "password": "loco"})])
+    async def test_find(self, param: str, expect: dict) -> None:
         session = AsyncMock()
-        session.stream_scalars.return_value.one.return_value = expect
-        assert await user_repository.find(session, name=param) == expect
+        session.fetch_one.return_value = expect
+        assert await user_repository.find(session, name=param) == User(**expect)
 
-    @mark.filterwarnings("ignore:coroutine 'AsyncMockMixin._execute_mock_call':RuntimeWarning")
     @mark.parametrize(["payload", "expect"], [(UserCreate(name="pepe", password="loco"), "pepe")])
     async def test_create(self, payload: UserCreate, expect: str) -> None:
-        result = await user_repository.create(AsyncMock(), obj_in=payload)
-        assert result.name == expect
+        session = AsyncMock()
+        session.execute.return_value = expect
+        assert await user_repository.create(session, obj_in=payload) == expect
 
     async def test_remove(self) -> None:
-        assert await user_repository.remove(AsyncMock(), model=User(name="sandwich", password="loco")) is None
-
-    @mark.filterwarnings("ignore:coroutine 'AsyncMockMixin._execute_mock_call':RuntimeWarning")
-    @mark.parametrize(
-        ["entity", "payload"],
-        [
-            (User(name="pepe", password="noche"), UserUpdate()),
-            (User(name="pepe", password="loco"), UserUpdate(password="noche")),
-        ],
-    )
-    async def test_update(self, entity: User, payload: UserUpdate) -> None:
         session = AsyncMock()
-        session.stream_scalars.return_value.one.return_value = entity
-        await user_repository.update(session, db_obj=entity, obj_in=payload)
-        if hasattr(UserUpdate, "password"):
-            assert entity.password != payload.password
-        assert entity.password is not None
+        session.execute.return_value = "expect"
+        assert await user_repository.remove(session, name="sandwich") is None
+
+    @mark.parametrize(["name", "payload"], [("pepe", UserUpdate(password="noche"))])
+    async def test_update(self, name: str, payload: UserUpdate) -> None:
+        session = AsyncMock()
+        session.execute.return_value = name
+        assert await user_repository.update(session, name=name, obj_in=payload) is None
 
     async def test_authenticate(self) -> None:
         assert (

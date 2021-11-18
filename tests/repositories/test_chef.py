@@ -8,32 +8,33 @@ from repositories.chef import chef_repository
 from schemas import ChefCreate, ChefUpdate
 
 
-@mark.asyncio
+@mark.anyio
 class TestChefRepository:
-    @mark.parametrize(["offset", "limit", "expect"], [(0, 5, []), (1, 1, [Chef(name="pepe")])])
-    async def test_list(self, offset: int, limit: int, expect: List[Chef]) -> None:
+    @mark.parametrize(["result", "expect"], [([], []), ([{"name": "pepe"}], [Chef(name="pepe")])])
+    async def test_list(self, result: List[dict], expect: List[Chef]) -> None:
         session = AsyncMock()
-        session.stream_scalars.return_value.all.return_value = expect
-        assert await chef_repository.list(session, offset=offset, limit=limit) == expect
+        session.fetch_all.return_value = result
+        assert await chef_repository.list(session) == expect
 
-    @mark.parametrize(["param", "expect"], [("pepe", Chef(name="pepe"))])
-    async def test_find(self, param: str, expect: Chef) -> None:
+    @mark.parametrize(["param", "expect"], [("pepe", {"name": "pepe"})])
+    async def test_find(self, param: str, expect: dict) -> None:
         session = AsyncMock()
-        session.stream_scalars.return_value.one.return_value = expect
-        assert await chef_repository.find(session, name=param) == expect
+        session.fetch_one.return_value = expect
+        assert await chef_repository.find(session, name=param) == Chef(**expect)
 
-    @mark.filterwarnings("ignore:coroutine 'AsyncMockMixin._execute_mock_call':RuntimeWarning")
     @mark.parametrize(["payload", "expect"], [(ChefCreate(name="pepe"), Chef(name="pepe"))])
     async def test_create(self, payload: ChefCreate, expect: Chef) -> None:
-        assert await chef_repository.create(AsyncMock(), obj_in=payload) == expect
+        session = AsyncMock()
+        session.execute.return_value = expect
+        assert await chef_repository.create(session, obj_in=payload) == expect
 
     async def test_remove(self) -> None:
-        assert await chef_repository.remove(AsyncMock(), model=Chef(name="pepe")) is None
+        session = AsyncMock()
+        session.execute.return_value = "expect"
+        assert await chef_repository.remove(session, name="pepe") is None
 
-    @mark.filterwarnings("ignore:coroutine 'AsyncMockMixin._execute_mock_call':RuntimeWarning")
-    @mark.parametrize(
-        ["entity", "payload", "expect"],
-        [(Chef(name="pepe"), ChefUpdate(reddit="espepe"), Chef(name="pepe", reddit="espepe"))],
-    )
-    async def test_update(self, entity: Chef, payload: ChefUpdate, expect: Chef) -> None:
-        assert await chef_repository.update(AsyncMock(), db_obj=entity, obj_in=payload) == expect
+    @mark.parametrize(["name", "payload"], [("pepe", ChefUpdate(reddit="espepe"))])
+    async def test_update(self, name: str, payload: ChefUpdate) -> None:
+        session = AsyncMock()
+        session.execute.return_value = name
+        assert await chef_repository.update(session, name=name, obj_in=payload) is None
