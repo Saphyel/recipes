@@ -1,11 +1,11 @@
-FROM saphyel/python-poetry:1
+FROM saphyel/python:poetry
  
 ENV PORT 80
 EXPOSE $PORT
 WORKDIR /app
 
 COPY poetry.lock pyproject.toml /app/
-RUN poetry config virtualenvs.create false;poetry install --no-dev -q
+RUN poetry config virtualenvs.create false;poetry install --no-dev
 
 COPY . /app
 
