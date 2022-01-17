@@ -18,14 +18,14 @@ class RecipeRepository:
 
         query = query.offset(offset).limit(limit)
         result = await db.fetch_all(query)
-        return [Recipe(**item) for item in result]
+        return [Recipe(**item) for item in result]  # type: ignore
 
     async def find(self, db: Database, *, title: str) -> Recipe:
         query = select(Recipe).where(Recipe.title == title)
         result = await db.fetch_one(query)
         if not result:
             raise ValueError("Not found")
-        return Recipe(**result)
+        return Recipe(**result)  # type: ignore
 
     async def create(self, db: Database, *, obj_in: RecipeCreate) -> str:
         query = insert(Recipe).values(**obj_in.__dict__).returning(Recipe.title)

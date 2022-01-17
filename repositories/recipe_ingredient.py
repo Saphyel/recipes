@@ -15,7 +15,7 @@ class RecipeIngredientRepository:
             select(RecipeIngredient).where(RecipeIngredient.recipe_title == recipe_title).offset(offset).limit(limit)
         )
         result = await db.fetch_all(query)
-        return [RecipeIngredient(**item) for item in result]
+        return [RecipeIngredient(**item) for item in result]  # type: ignore
 
     async def find(self, db: Database, *, recipe_title: str, ingredient_name: str) -> RecipeIngredient:
         query = (
@@ -26,7 +26,7 @@ class RecipeIngredientRepository:
         result = await db.fetch_one(query)
         if not result:
             raise ValueError("Not found")
-        return RecipeIngredient(**result)
+        return RecipeIngredient(**result)  # type: ignore
 
     async def create(self, db: Database, *, obj_in: RecipeIngredientCreate, recipe_title: str) -> str:
         query = (

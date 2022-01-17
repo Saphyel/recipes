@@ -12,14 +12,14 @@ class UserRepository:
     async def list(self, db: Database, *, offset: int = 0, limit: int = 100) -> List[User]:
         query = select(User).offset(offset).limit(limit)
         result = await db.fetch_all(query)
-        return [User(**item) for item in result]
+        return [User(**item) for item in result]  # type: ignore
 
     async def find(self, db: Database, *, name: str) -> User:
         query = select(User).where(User.name == name)
         result = await db.fetch_one(query)
         if not result:
             raise ValueError("Not found")
-        return User(**result)
+        return User(**result)  # type: ignore
 
     async def authenticate(self, *, db_obj: User, password: str) -> bool:
         return pwd_context.verify(password, db_obj.password)

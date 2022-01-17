@@ -11,14 +11,14 @@ class ChefRepository:
     async def list(self, db: Database, *, offset: int = 0, limit: int = 100) -> List[Chef]:
         query = select(Chef).offset(offset).limit(limit)
         result = await db.fetch_all(query)
-        return [Chef(**item) for item in result]
+        return [Chef(**item) for item in result]  # type: ignore
 
     async def find(self, db: Database, *, name: str) -> Chef:
         query = select(Chef).where(Chef.name == name)
         result = await db.fetch_one(query)
         if not result:
             raise ValueError("Not found")
-        return Chef(**result)
+        return Chef(**result)  # type: ignore
 
     async def create(self, db: Database, *, obj_in: ChefCreate) -> str:
         query = insert(Chef).values(**obj_in.__dict__).returning(Chef.name)

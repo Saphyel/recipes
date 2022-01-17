@@ -3,3 +3,5 @@
 .idea/
 .coverage
 __pypackages__/
+__pycache__/
+.pdm.toml

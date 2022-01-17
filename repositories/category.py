@@ -11,14 +11,14 @@ class CategoryRepository:
     async def list(self, db: Database, *, offset: int = 0, limit: int = 100) -> List[Category]:
         query = select(Category).offset(offset).limit(limit)
         result = await db.fetch_all(query)
-        return [Category(**item) for item in result]
+        return [Category(**item) for item in result]  # type: ignore
 
     async def find(self, db: Database, *, name: str) -> Category:
         query = select(Category).where(Category.name == name)
         result = await db.fetch_one(query)
         if not result:
             raise ValueError("Not found")
-        return Category(**result)
+        return Category(**result)  # type: ignore
 
     async def create(self, db: Database, *, obj_in: CategoryCreate) -> str:
         query = insert(Category).values(**obj_in.__dict__).returning(Category.name)

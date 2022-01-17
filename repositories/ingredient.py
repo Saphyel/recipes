@@ -11,14 +11,14 @@ class IngredientRepository:
     async def list(self, db: Database, *, offset: int = 0, limit: int = 100) -> List[Ingredient]:
         query = select(Ingredient).offset(offset).limit(limit)
         result = await db.fetch_all(query)
-        return [Ingredient(**item) for item in result]
+        return [Ingredient(**item) for item in result]  # type: ignore
 
     async def find(self, db: Database, *, name: str) -> Ingredient:
         query = select(Ingredient).where(Ingredient.name == name)
         result = await db.fetch_one(query)
         if not result:
             raise ValueError("Not found")
-        return Ingredient(**result)
+        return Ingredient(**result)  # type: ignore
 
     async def create(self, db: Database, *, obj_in: IngredientCreate) -> str:
         query = insert(Ingredient).values(**obj_in.__dict__).returning(Ingredient.name)
