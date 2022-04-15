@@ -6,5 +6,5 @@ build:
   docker:
     web: Dockerfile
 release:
-  command: [ alembic upgrade head ]
+  command: [ python -m alembic upgrade head ]
   image: web
