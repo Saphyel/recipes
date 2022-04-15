@@ -30,8 +30,9 @@ homepage = ""
 [project.optional-dependencies]
 [tool]
 [tool.pdm.scripts]
-server = { shell = "uvicorn main:app --host 0.0.0.0 --port $PORT --reload" }
-test = { shell = "coverage run -m pytest tests/ --junitxml=junit.xml;coverage report -m" }
+server = "uvicorn main:app --host 0.0.0.0 --port $PORT --reload"
+test = "coverage run -m pytest tests/ --junitxml=junit.xml"
+post_test = "coverage report -m"
 
 [tool.pdm.dev-dependencies]
 dev = [
