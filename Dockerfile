@@ -1,12 +1,12 @@
-FROM saphyel/python:poetry
+FROM saphyel/python:pdm
  
 ENV PORT 80
 EXPOSE $PORT
 WORKDIR /app
 
-COPY poetry.lock pyproject.toml /app/
-RUN poetry config virtualenvs.create false;poetry install --no-dev
+COPY pdm.lock pyproject..oml /app/
+RUN pdm install --prod
 
 COPY . /app
 
-CMD uvicorn --host 0.0.0.0 --port $PORT main:app
+CMD python -m uvicorn --host 0.0.0.0 --port $PORT main:app

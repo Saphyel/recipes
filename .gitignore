@@ -5,3 +5,4 @@
 __pypackages__/
 __pycache__/
 .pdm.toml
+junit.xml

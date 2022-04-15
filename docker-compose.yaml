@@ -6,11 +6,11 @@ services:
     ports: [ "8081:80" ]
     volumes:
       - ./:/app/
-    command: uvicorn --reload --host 0.0.0.0 --port 80 main:app
+    command: pdm run server
     env_file: [ .env ]
 
   db:
-    image: postgres:13
+    image: postgres:14
     ports: [ "5432:5432" ]
     volumes:
       - pgdata:/var/lib/postgresql/data
