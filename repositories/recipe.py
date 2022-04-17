@@ -48,6 +48,3 @@ class RecipeRepository:
         result = await db.execute(query)
         if not result:
             raise ValueError("Not found")
-
-
-recipe_repository = RecipeRepository()

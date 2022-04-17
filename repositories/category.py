@@ -29,6 +29,3 @@ class CategoryRepository:
         result = await db.execute(query)
         if not result:
             raise ValueError("Not found")
-
-
-category_repository = CategoryRepository()

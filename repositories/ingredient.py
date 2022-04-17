@@ -30,6 +30,3 @@ class IngredientRepository:
         result = await db.execute(query)
         if not result:
             raise ValueError("Not found")
-
-
-ingredient_repository = IngredientRepository()

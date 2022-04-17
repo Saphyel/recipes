@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 from pytest import mark
 
 from models.category import Category
-from repositories.category import category_repository
+from repositories.category import CategoryRepository
 from schemas import CategoryCreate
 
 
@@ -14,21 +14,21 @@ class TestCategoryRepository:
     async def test_list(self, result: List[dict], expect: List[Category]) -> None:
         session = AsyncMock()
         session.fetch_all.return_value = result
-        assert await category_repository.list(session) == expect
+        assert await CategoryRepository().list(session) == expect
 
     @mark.parametrize(["param", "expect"], [("sandwich", {"name": "sandwich"})])
     async def test_find(self, param: str, expect: dict) -> None:
         session = AsyncMock()
         session.fetch_one.return_value = expect
-        assert await category_repository.find(session, name=param) == Category(**expect)
+        assert await CategoryRepository().find(session, name=param) == Category(**expect)
 
     @mark.parametrize(["payload", "expect"], [(CategoryCreate(name="sandwich"), "sandwich")])
     async def test_create(self, payload: CategoryCreate, expect: str) -> None:
         session = AsyncMock()
         session.execute.return_value = expect
-        assert await category_repository.create(session, obj_in=payload) == expect
+        assert await CategoryRepository().create(session, obj_in=payload) == expect
 
     async def test_remove(self) -> None:
         session = AsyncMock()
         session.execute.return_value = "expect"
-        assert await category_repository.remove(session, name="sandwich") is None
+        assert await CategoryRepository().remove(session, name="sandwich") is None

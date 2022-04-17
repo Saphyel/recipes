@@ -43,6 +43,3 @@ class UserRepository:
         result = await db.execute(query)
         if not result:
             raise ValueError("Not found")
-
-
-user_repository = UserRepository()

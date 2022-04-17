@@ -11,21 +11,27 @@ import schemas
 from core.security import get_current_user
 from db.session import database
 from models.user import User
-from repositories.user import user_repository
+from repositories.user import UserRepository
 
 router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.User])
-async def index(current_user: schemas.User = Depends(get_current_user)) -> List[User]:
-    return await user_repository.list(db=database)
+async def index(
+    current_user: schemas.User = Depends(get_current_user), repository: UserRepository = Depends(UserRepository)
+) -> List[User]:
+    return await repository.list(db=database)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.User)
-async def create(obj_in: schemas.UserCreate, current_user: schemas.User = Depends(get_current_user)) -> User:
+async def create(
+    obj_in: schemas.UserCreate,
+    current_user: schemas.User = Depends(get_current_user),
+    repository: UserRepository = Depends(UserRepository),
+) -> User:
     try:
-        result = await user_repository.create(db=database, obj_in=obj_in)
-        return await user_repository.find(db=database, name=result)
+        result = await repository.create(db=database, obj_in=obj_in)
+        return await repository.find(db=database, name=result)
     except ValidationError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
     except IntegrityError as error:
@@ -35,17 +41,21 @@ async def create(obj_in: schemas.UserCreate, current_user: schemas.User = Depend
 
 
 @router.get("/{name}", response_model=schemas.User)
-async def read(name: str) -> User:
+async def read(name: str, repository: UserRepository = Depends(UserRepository)) -> User:
     try:
-        return await user_repository.find(db=database, name=name)
+        return await repository.find(db=database, name=name)
     except ValueError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
 
 
 @router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
-async def remove(name: str, current_user: schemas.User = Depends(get_current_user)) -> str:
+async def remove(
+    name: str,
+    current_user: schemas.User = Depends(get_current_user),
+    repository: UserRepository = Depends(UserRepository),
+) -> str:
     try:
-        await user_repository.remove(db=database, name=name)
+        await repository.remove(db=database, name=name)
         return ""
     except ValueError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")

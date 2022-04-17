@@ -10,7 +10,7 @@ from starlette import status
 from core.config import settings, reusable_oauth2
 from db.session import database
 from models.user import User
-from repositories.user import user_repository
+from repositories.user import UserRepository
 from schemas import TokenPayload
 
 
@@ -24,11 +24,13 @@ def create_access_token(subject: str, expires_delta: Optional[timedelta] = None)
     return encoded_jwt
 
 
-async def get_current_user(token: str = Depends(reusable_oauth2)) -> User:
+async def get_current_user(
+    token: str = Depends(reusable_oauth2), repository: UserRepository = Depends(UserRepository)
+) -> User:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         token_data = TokenPayload(**payload)
-        user = await user_repository.find(database, name=token_data.name)
+        user = await repository.find(database, name=token_data.name)
         return user
     except (jwt.JWTError, ValidationError):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Could not validate credentials")

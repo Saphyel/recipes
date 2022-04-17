@@ -36,6 +36,3 @@ class ChefRepository:
         result = await db.execute(query)
         if not result:
             raise ValueError("Not found")
-
-
-chef_repository = ChefRepository()
