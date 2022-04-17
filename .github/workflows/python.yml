@@ -2,6 +2,9 @@ name: Python application
 
 on: push
 
+env:
+  DATABASE_URL: postgresql://postgres:password@db:5432/postgres
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,4 +22,4 @@ jobs:
     - name: Check static types
       run: docker run app python -m mypy .
     - name: Test with pytest
-      run: docker run app sh -c 'pdm run test'
+      run: docker run -e DATABASE_URL app pdm run test -m "not webtest"

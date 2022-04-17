@@ -55,7 +55,10 @@ warn_return_any = false
 exclude = [
     "^__pypackages__/"
 ]
-
+[tool.pytest.ini_options]
+markers = [
+    "webtest: marks tests as slow (deselect with '-m \"not slow\"')",
+]
 [tool.coverage.run]
 branch = true
 omit = [

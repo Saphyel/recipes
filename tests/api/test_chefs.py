@@ -1,6 +1,7 @@
 from pytest import mark
 
 
+@mark.webtest
 @mark.filterwarnings("ignore:.*Row.keys().*SQLAlchemy.*:DeprecationWarning")
 class TestChefsEndpoints:
     @mark.parametrize(

@@ -4,6 +4,7 @@ from pytest import mark
 # pytestmark = mark.filterwarnings("ignore:.*Row.keys().*SQLAlchemy.*:DeprecationWarning")
 
 
+@mark.webtest
 @mark.filterwarnings("ignore:.*Row.keys().*SQLAlchemy.*:DeprecationWarning")
 class TestCategoriesEndpoints:
     @mark.parametrize(["payload", "expect"], [({"name": "Cena"}, {"name": "Cena"})])
