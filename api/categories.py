@@ -20,7 +20,12 @@ async def index(repository: CategoryRepository = Depends(CategoryRepository)) ->
     return await repository.list(db=database)
 
 
-@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.Category)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.Category,
+    responses={400: {"description": "Invalid request", "model": schemas.HttpError}},
+)
 async def create(
     obj_in: schemas.CategoryCreate, repository: CategoryRepository = Depends(CategoryRepository)
 ) -> Category:
@@ -35,7 +40,11 @@ async def create(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
-@router.get("/{name}", response_model=schemas.Category)
+@router.get(
+    "/{name}",
+    response_model=schemas.Category,
+    responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
+)
 async def read(name: str, repository: CategoryRepository = Depends(CategoryRepository)) -> Category:
     try:
         return await repository.find(db=database, name=name)
@@ -43,7 +52,11 @@ async def read(name: str, repository: CategoryRepository = Depends(CategoryRepos
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
 
 
-@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{name}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
+)
 async def remove(name: str, repository: CategoryRepository = Depends(CategoryRepository)) -> str:
     try:
         await repository.remove(db=database, name=name)

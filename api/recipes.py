@@ -22,7 +22,12 @@ async def index(repository: RecipeRepository = Depends(RecipeRepository)) -> Lis
     return await repository.list(db=database)
 
 
-@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.Recipe)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.Recipe,
+    responses={400: {"description": "Invalid request", "model": schemas.HttpError}},
+)
 async def create(obj_in: schemas.RecipeCreate, repository: RecipeRepository = Depends(RecipeRepository)) -> Recipe:
     try:
         result = await repository.create(db=database, obj_in=obj_in)
@@ -37,7 +42,11 @@ async def create(obj_in: schemas.RecipeCreate, repository: RecipeRepository = De
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
-@router.get("/{title}", response_model=schemas.Recipe)
+@router.get(
+    "/{title}",
+    response_model=schemas.Recipe,
+    responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
+)
 async def read(title: str, repository: RecipeRepository = Depends(RecipeRepository)) -> Recipe:
     try:
         return await repository.find(db=database, title=title)
@@ -45,7 +54,14 @@ async def read(title: str, repository: RecipeRepository = Depends(RecipeReposito
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
 
 
-@router.patch("/{title}", response_model=schemas.Recipe)
+@router.patch(
+    "/{title}",
+    response_model=schemas.Recipe,
+    responses={
+        400: {"description": "Invalid request", "model": schemas.HttpError},
+        404: {"description": "Resource not found", "model": schemas.HttpError},
+    },
+)
 async def update(
     title: str, obj_in: schemas.RecipeUpdate, repository: RecipeRepository = Depends(RecipeRepository)
 ) -> Recipe:
@@ -62,7 +78,11 @@ async def update(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
-@router.delete("/{title}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{title}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
+)
 async def remove(title: str, repository: RecipeRepository = Depends(RecipeRepository)) -> str:
     try:
         await repository.remove(db=database, title=title)
@@ -78,7 +98,11 @@ async def ingredients_index(
     return await repository.list(db=database, recipe_title=title)
 
 
-@router.delete("/{title}/ingredients/{name}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{title}/ingredients/{name}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
+)
 async def ingredients_remove(
     title: str, name: str, repository: RecipeIngredientRepository = Depends(RecipeIngredientRepository)
 ) -> str:

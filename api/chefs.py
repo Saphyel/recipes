@@ -20,7 +20,12 @@ async def index(repository: ChefRepository = Depends(ChefRepository)) -> List[Ch
     return await repository.list(db=database)
 
 
-@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.Chef)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.Chef,
+    responses={400: {"description": "Invalid request", "model": schemas.HttpError}},
+)
 async def create(obj_in: schemas.ChefCreate, repository: ChefRepository = Depends(ChefRepository)) -> Chef:
     try:
         result = await repository.create(db=database, obj_in=obj_in)
@@ -33,7 +38,11 @@ async def create(obj_in: schemas.ChefCreate, repository: ChefRepository = Depend
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
-@router.get("/{name}", response_model=schemas.Chef)
+@router.get(
+    "/{name}",
+    response_model=schemas.Chef,
+    responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
+)
 async def read(name: str, repository: ChefRepository = Depends(ChefRepository)) -> Chef:
     try:
         return await repository.find(db=database, name=name)
@@ -41,7 +50,14 @@ async def read(name: str, repository: ChefRepository = Depends(ChefRepository)) 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
 
 
-@router.patch("/{name}", response_model=schemas.Chef)
+@router.patch(
+    "/{name}",
+    response_model=schemas.Chef,
+    responses={
+        400: {"description": "Invalid request", "model": schemas.HttpError},
+        404: {"description": "Resource not found", "model": schemas.HttpError},
+    },
+)
 async def update(name: str, obj_in: schemas.ChefUpdate, repository: ChefRepository = Depends(ChefRepository)) -> Chef:
     try:
         await repository.update(db=database, name=name, obj_in=obj_in)
@@ -52,7 +68,11 @@ async def update(name: str, obj_in: schemas.ChefUpdate, repository: ChefReposito
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
 
 
-@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{name}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
+)
 async def remove(name: str, repository: ChefRepository = Depends(ChefRepository)) -> str:
     try:
         await repository.remove(db=database, name=name)

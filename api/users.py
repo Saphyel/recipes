@@ -23,7 +23,12 @@ async def index(
     return await repository.list(db=database)
 
 
-@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.User)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.User,
+    responses={400: {"description": "Invalid request", "model": schemas.HttpError}},
+)
 async def create(
     obj_in: schemas.UserCreate,
     current_user: schemas.User = Depends(get_current_user),
@@ -40,7 +45,11 @@ async def create(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
 
 
-@router.get("/{name}", response_model=schemas.User)
+@router.get(
+    "/{name}",
+    response_model=schemas.User,
+    responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
+)
 async def read(name: str, repository: UserRepository = Depends(UserRepository)) -> User:
     try:
         return await repository.find(db=database, name=name)
@@ -48,7 +57,11 @@ async def read(name: str, repository: UserRepository = Depends(UserRepository)) 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
 
 
-@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{name}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
+)
 async def remove(
     name: str,
     current_user: schemas.User = Depends(get_current_user),
