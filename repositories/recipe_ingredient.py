@@ -1,49 +1,43 @@
 from typing import List
 
-from databases import Database
+from .base import BaseRepository
 from sqlalchemy import select, insert, delete
 
 from models.recipe_ingredient import RecipeIngredient
 from schemas.recipe_ingredient import RecipeIngredientCreate
 
 
-class RecipeIngredientRepository:
-    async def list(
-        self, db: Database, *, recipe_title: str, offset: int = 0, limit: int = 100
-    ) -> List[RecipeIngredient]:
+class RecipeIngredientRepository(BaseRepository):
+    async def list(self, *, recipe_title: str, offset: int = 0, limit: int = 100) -> List[RecipeIngredient]:
         query = (
             select(RecipeIngredient).where(RecipeIngredient.recipe_title == recipe_title).offset(offset).limit(limit)
         )
-        result = await db.fetch_all(query)
-        return [RecipeIngredient(**item) for item in result]  # type: ignore
+        result = await self.db.execute(query)
+        return result.scalars().all()
 
-    async def find(self, db: Database, *, recipe_title: str, ingredient_name: str) -> RecipeIngredient:
+    async def find(self, *, recipe_title: str, ingredient_name: str) -> RecipeIngredient:
         query = (
             select(RecipeIngredient)
             .where(RecipeIngredient.ingredient_name == ingredient_name)
             .where(RecipeIngredient.recipe_title == recipe_title)
         )
-        result = await db.fetch_one(query)
-        if not result:
-            raise ValueError("Not found")
-        return RecipeIngredient(**result)  # type: ignore
+        result = await self.db.execute(query)
+        return result.scalar_one()
 
-    async def create(self, db: Database, *, obj_in: RecipeIngredientCreate, recipe_title: str) -> str:
+    async def create(self, *, obj_in: RecipeIngredientCreate, recipe_title: str) -> str:
         query = (
             insert(RecipeIngredient)
             .values(**obj_in.__dict__, recipe_title=recipe_title)
             .returning(RecipeIngredient.recipe_title)
         )
-        result = await db.execute(query)
-        return result
+        result = await self.db.execute(query)
+        return result.scalar_one()
 
-    async def remove(self, db: Database, *, ingredient_name: str, recipe_title: str) -> None:
+    async def remove(self, *, ingredient_name: str, recipe_title: str) -> None:
         query = (
             delete(RecipeIngredient)
             .where(RecipeIngredient.ingredient_name == ingredient_name)
             .where(RecipeIngredient.recipe_title == recipe_title)
             .returning(RecipeIngredient.ingredient_name)
         )
-        result = await db.execute(query)
-        if not result:
-            raise ValueError("Not found")
+        await self.db.execute(query)

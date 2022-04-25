@@ -1,5 +1,5 @@
 from typing import List
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 from pytest import mark
 
@@ -10,25 +10,30 @@ from schemas import CategoryCreate
 
 @mark.anyio
 class TestCategoryRepository:
-    @mark.parametrize(["result", "expect"], [([], []), ([{"name": "sandwich"}], [Category(name="sandwich")])])
-    async def test_list(self, result: List[dict], expect: List[Category]) -> None:
+    @mark.parametrize("expect", ([], Category(name="sandwich")))
+    async def test_list(self, expect: List[Category]) -> None:
+        result = Mock()
+        result.unique.return_value.scalars.return_value.all.return_value = expect
         session = AsyncMock()
-        session.fetch_all.return_value = result
-        assert await CategoryRepository().list(session) == expect
+        session.execute.return_value = result
+        assert await CategoryRepository(session).list() == expect
 
-    @mark.parametrize(["param", "expect"], [("sandwich", {"name": "sandwich"})])
-    async def test_find(self, param: str, expect: dict) -> None:
+    @mark.parametrize(["param", "expect"], [("sandwich", Category(name="sandwich"))])
+    async def test_find(self, param: str, expect: Category) -> None:
+        result = Mock()
+        result.unique.return_value.scalar_one.return_value = expect
         session = AsyncMock()
-        session.fetch_one.return_value = expect
-        assert await CategoryRepository().find(session, name=param) == Category(**expect)
+        session.execute.return_value = result
+        assert await CategoryRepository(session).find(name=param) == expect
 
-    @mark.parametrize(["payload", "expect"], [(CategoryCreate(name="sandwich"), "sandwich")])
-    async def test_create(self, payload: CategoryCreate, expect: str) -> None:
+    @mark.parametrize(["payload", "expect"], [(CategoryCreate(name="sandwich"), Category(name="sandwich"))])
+    async def test_create(self, payload: CategoryCreate, expect: Category) -> None:
+        # result = Mock()
+        # result.scalar_one.return_value = expect
         session = AsyncMock()
-        session.execute.return_value = expect
-        assert await CategoryRepository().create(session, obj_in=payload) == expect
+        assert await CategoryRepository(session).create(obj_in=payload) == expect
 
     async def test_remove(self) -> None:
         session = AsyncMock()
         session.execute.return_value = "expect"
-        assert await CategoryRepository().remove(session, name="sandwich") is None
+        assert await CategoryRepository(session).remove(category=Category(name="sandwich")) is None

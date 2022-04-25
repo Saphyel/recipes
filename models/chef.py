@@ -15,4 +15,4 @@ class Chef(Base):
     reddit: Optional[str] = field(default=None, metadata={"sa": Column(String)})
     instagram: Optional[str] = field(default=None, metadata={"sa": Column(String)})
     twitter: Optional[str] = field(default=None, metadata={"sa": Column(String)})
-    recipes: List[Recipe] = field(default_factory=list, metadata={"sa": relationship("Recipe")})
+    recipes: List[Recipe] = field(default_factory=list, metadata={"sa": relationship("Recipe", lazy="joined")})

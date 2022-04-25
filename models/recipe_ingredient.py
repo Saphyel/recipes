@@ -16,5 +16,5 @@ class RecipeIngredient(Base):
     recipe_title: str = field(metadata={"sa": Column(ForeignKey("recipe.title"))})
     ingredient_name: str = field(metadata={"sa": Column(ForeignKey("ingredient.name"))})
     quantity: str = field(metadata={"sa": Column(String)})
-    recipe: Recipe = field(metadata={"sa": relationship("Recipe", uselist=False)})
-    ingredient: Ingredient = field(metadata={"sa": relationship("Ingredient", uselist=False)})
+    recipe: Recipe = field(metadata={"sa": relationship("Recipe", lazy="joined", uselist=False)})
+    ingredient: Ingredient = field(metadata={"sa": relationship("Ingredient", lazy="joined", uselist=False)})

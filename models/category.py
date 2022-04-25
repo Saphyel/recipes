@@ -12,4 +12,4 @@ from models.recipe import Recipe
 @dataclass
 class Category(Base):
     name: str = field(metadata={"sa": Column(String, primary_key=True)})
-    recipes: List[Recipe] = field(default_factory=list, metadata={"sa": relationship("Recipe")})
+    recipes: List[Recipe] = field(default_factory=list, metadata={"sa": relationship("Recipe", lazy="joined")})

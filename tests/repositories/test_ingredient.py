@@ -1,5 +1,5 @@
 from typing import List
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 from pytest import mark
 
@@ -10,25 +10,31 @@ from schemas import IngredientCreate
 
 @mark.anyio
 class TestIngredientRepository:
-    @mark.parametrize(["result", "expect"], [([], []), ([{"name": "sandwich"}], [Ingredient(name="sandwich")])])
-    async def test_list(self, result: List[dict], expect: List[Ingredient]) -> None:
+    @mark.parametrize("expect", ([], [Ingredient(name="sandwich")]))
+    async def test_list(self, expect: List[Ingredient]) -> None:
+        result = Mock()
+        result.scalars.return_value.all.return_value = expect
         session = AsyncMock()
-        session.fetch_all.return_value = result
-        assert await IngredientRepository().list(session) == expect
+        session.execute.return_value = result
+        assert await IngredientRepository(session).list() == expect
 
-    @mark.parametrize(["param", "expect"], [("sandwich", {"name": "sandwich"})])
+    @mark.parametrize(["param", "expect"], [("sandwich", Ingredient(name="sandwich"))])
     async def test_find(self, param: str, expect: dict) -> None:
+        result = Mock()
+        result.scalar_one.return_value = expect
         session = AsyncMock()
-        session.fetch_one.return_value = expect
-        assert await IngredientRepository().find(session, name=param) == Ingredient(**expect)
+        session.execute.return_value = result
+        assert await IngredientRepository(session).find(name=param) == expect
 
     @mark.parametrize(["payload", "expect"], [(IngredientCreate(name="sandwich"), Ingredient(name="sandwich"))])
     async def test_create(self, payload: IngredientCreate, expect: Ingredient) -> None:
+        result = Mock()
+        result.scalar_one.return_value = expect.name
         session = AsyncMock()
-        session.execute.return_value = expect
-        assert await IngredientRepository().create(session, obj_in=payload) == expect
+        session.execute.return_value = result
+        assert await IngredientRepository(session).create(obj_in=payload) == expect.name
 
     async def test_remove(self) -> None:
         session = AsyncMock()
         session.execute.return_value = "expect"
-        assert await IngredientRepository().remove(session, name="sandwich") is None
+        assert await IngredientRepository(session).remove(ingredient=Ingredient(name="sandwich")) is None

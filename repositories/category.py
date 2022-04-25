@@ -1,31 +1,29 @@
 from typing import List
 
-from databases import Database
-from sqlalchemy import select, insert, delete
-
 from models.category import Category
 from schemas.category import CategoryCreate
+from sqlalchemy import select
+from .base import BaseRepository
 
 
-class CategoryRepository:
-    async def list(self, db: Database, *, offset: int = 0, limit: int = 100) -> List[Category]:
+class CategoryRepository(BaseRepository):
+    async def list(self, *, offset: int = 0, limit: int = 100) -> List[Category]:
         query = select(Category).offset(offset).limit(limit)
-        result = await db.fetch_all(query)
-        return [Category(**item) for item in result]  # type: ignore
+        result = await self.db.execute(query)
+        return result.unique().scalars().all()
 
-    async def find(self, db: Database, *, name: str) -> Category:
+    async def find(self, *, name: str) -> Category:
         query = select(Category).where(Category.name == name)
-        result = await db.fetch_one(query)
-        if not result:
-            raise ValueError("Not found")
-        return Category(**result)  # type: ignore
+        result = await self.db.execute(query)
+        return result.unique().scalar_one()
 
-    async def create(self, db: Database, *, obj_in: CategoryCreate) -> str:
-        query = insert(Category).values(**obj_in.__dict__).returning(Category.name)
-        return await db.execute(query)
+    async def create(self, *, obj_in: CategoryCreate) -> Category:
+        result = Category(**obj_in.__dict__)
+        self.db.add(result)
+        await self.db.commit()
+        await self.db.refresh(result)
+        return result
 
-    async def remove(self, db: Database, *, name: str) -> None:
-        query = delete(Category).where(Category.name == name).returning(Category.name)
-        result = await db.execute(query)
-        if not result:
-            raise ValueError("Not found")
+    async def remove(self, *, category: Category) -> None:
+        await self.db.delete(category)
+        await self.db.commit()

@@ -5,20 +5,9 @@ from fastapi.staticfiles import StaticFiles
 import api
 import web
 from core.config import settings
-from db.session import database
 
 app = FastAPI(title=settings.PROJECT_NAME)
 app.add_middleware(GZipMiddleware)
-
-
-@app.on_event("startup")
-async def startup():
-    await database.connect()
-
-
-@app.on_event("shutdown")
-async def shutdown():
-    await database.disconnect()
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")

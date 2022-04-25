@@ -1,23 +1,21 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Depends
-
-# from psycopg2.errors import UniqueViolation
-from pydantic.error_wrappers import ValidationError
-from sqlalchemy.exc import IntegrityError
-from starlette import status
-
 import schemas
-from db.session import database
+from fastapi import APIRouter, HTTPException, Depends
 from models.chef import Chef
 from repositories.chef import ChefRepository
+from sqlalchemy.exc import IntegrityError, NoResultFound
+from starlette import status
 
 router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.Chef])
 async def index(repository: ChefRepository = Depends(ChefRepository)) -> List[Chef]:
-    return await repository.list(db=database)
+    try:
+        return await repository.list()
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
 
 
 @router.post(
@@ -28,14 +26,12 @@ async def index(repository: ChefRepository = Depends(ChefRepository)) -> List[Ch
 )
 async def create(obj_in: schemas.ChefCreate, repository: ChefRepository = Depends(ChefRepository)) -> Chef:
     try:
-        result = await repository.create(db=database, obj_in=obj_in)
-        return await repository.find(db=database, name=result)
-    except ValidationError as error:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
-    except IntegrityError as error:
-        # if error.orig == UniqueViolation:
-        #     raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Resource already exist")
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
+        result = await repository.create(obj_in=obj_in)
+        return await repository.find(name=result)
+    except IntegrityError:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Resource already exist")
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
 
 
 @router.get(
@@ -45,9 +41,11 @@ async def create(obj_in: schemas.ChefCreate, repository: ChefRepository = Depend
 )
 async def read(name: str, repository: ChefRepository = Depends(ChefRepository)) -> Chef:
     try:
-        return await repository.find(db=database, name=name)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
+        return await repository.find(name=name)
+    except (ValueError, NoResultFound):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
 
 
 @router.patch(
@@ -60,12 +58,12 @@ async def read(name: str, repository: ChefRepository = Depends(ChefRepository)) 
 )
 async def update(name: str, obj_in: schemas.ChefUpdate, repository: ChefRepository = Depends(ChefRepository)) -> Chef:
     try:
-        await repository.update(db=database, name=name, obj_in=obj_in)
-        return await repository.find(db=database, name=name)
-    except ValidationError as error:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
+        await repository.update(name=name, obj_in=obj_in)
+        return await repository.find(name=name)
+    except (ValueError, NoResultFound):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
 
 
 @router.delete(
@@ -75,7 +73,9 @@ async def update(name: str, obj_in: schemas.ChefUpdate, repository: ChefReposito
 )
 async def remove(name: str, repository: ChefRepository = Depends(ChefRepository)) -> str:
     try:
-        await repository.remove(db=database, name=name)
+        await repository.remove(chef=await repository.find(name=name))
         return ""
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
+    except (ValueError, NoResultFound):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")

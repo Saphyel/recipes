@@ -1,5 +1,5 @@
 from typing import List
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 from pytest import mark
 
@@ -10,34 +10,37 @@ from schemas import RecipeCreate, RecipeUpdate
 
 @mark.anyio
 class TestRecipeRepository:
-    @mark.parametrize(
-        ["result", "category", "expect"],
-        [([], None, []), ([{"title": "sandwich"}], "cena", [Recipe(title="sandwich")])],
-    )
-    async def test_list(self, result: List[dict], category: str, expect: List[Recipe]) -> None:
+    @mark.parametrize("expect", ([], [Recipe(title="sandwich")]))
+    async def test_list(self, expect: List[Recipe]) -> None:
+        result = Mock()
+        result.unique.return_value.scalars.return_value.all.return_value = expect
         session = AsyncMock()
-        session.fetch_all.return_value = result
-        assert await RecipeRepository().list(session, category=category) == expect
+        session.execute.return_value = result
+        assert await RecipeRepository(session).list() == expect
 
-    @mark.parametrize(["param", "expect"], [("sandwich", {"title": "sandwich"})])
+    @mark.parametrize(["param", "expect"], [("sandwich", Recipe(title="sandwich"))])
     async def test_find(self, param: str, expect: dict) -> None:
+        result = Mock()
+        result.unique.return_value.scalar_one.return_value = expect
         session = AsyncMock()
-        session.fetch_one.return_value = expect
-        assert await RecipeRepository().find(session, title=param) == Recipe(**expect)
+        session.execute.return_value = result
+        assert await RecipeRepository(session).find(title=param) == expect
 
     @mark.parametrize(["payload", "expect"], [(RecipeCreate(title="sandwich"), Recipe(title="sandwich"))])
     async def test_create(self, payload: RecipeCreate, expect: Recipe) -> None:
+        result = Mock()
+        result.scalar_one.return_value = expect.title
         session = AsyncMock()
-        session.execute.return_value = expect
-        assert await RecipeRepository().create(session, obj_in=payload) == expect
+        session.execute.return_value = result
+        assert await RecipeRepository(session).create(obj_in=payload) == expect.title
 
     async def test_remove(self) -> None:
         session = AsyncMock()
         session.execute.return_value = "expect"
-        assert await RecipeRepository().remove(session, title="sandwich") is None
+        assert await RecipeRepository(session).remove(recipe=Recipe(title="sandwich")) is None
 
     @mark.parametrize(["title", "payload"], [("sandwich", RecipeUpdate(active_cook=3))])
     async def test_update(self, title: str, payload: RecipeUpdate) -> None:
         session = AsyncMock()
         session.execute.return_value = title
-        assert await RecipeRepository().update(session, title=title, obj_in=payload) is None
+        assert await RecipeRepository(session).update(title=title, obj_in=payload) is None

@@ -1,5 +1,5 @@
 from typing import List
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 from pytest import mark
 
@@ -10,36 +10,43 @@ from schemas.user import UserCreate, UserUpdate
 
 @mark.anyio
 class TestUserRepository:
+    @mark.parametrize("expect", ([], [User(name="pepe", password="loco")]))
+    async def test_list(self, expect: List[User]) -> None:
+        result = Mock()
+        result.scalars.return_value.all.return_value = expect
+        session = AsyncMock()
+        session.execute.return_value = result
+        assert await UserRepository(session).list() == expect
+
+    @mark.parametrize(["param", "expect"], [("pepe", User(name="pepe", password="loco"))])
+    async def test_find(self, param: str, expect: User) -> None:
+        result = Mock()
+        result.scalar_one.return_value = expect
+        session = AsyncMock()
+        session.execute.return_value = result
+        assert await UserRepository(session).find(name=param) == expect
+
     @mark.parametrize(
-        ["result", "expect"], [([], []), ([{"name": "pepe", "password": "loco"}], [User(name="pepe", password="loco")])]
+        ["payload", "expect"], [(UserCreate(name="pepe", password="loco"), User(name="pepe", password="loco"))]
     )
-    async def test_list(self, result: List[dict], expect: List[User]) -> None:
+    async def test_create(self, payload: UserCreate, expect: User) -> None:
+        result = Mock()
+        result.scalar_one.return_value = expect.name
         session = AsyncMock()
-        session.fetch_all.return_value = result
-        assert await UserRepository().list(session) == expect
-
-    @mark.parametrize(["param", "expect"], [("pepe", {"name": "pepe", "password": "loco"})])
-    async def test_find(self, param: str, expect: dict) -> None:
-        session = AsyncMock()
-        session.fetch_one.return_value = expect
-        assert await UserRepository().find(session, name=param) == User(**expect)
-
-    @mark.parametrize(["payload", "expect"], [(UserCreate(name="pepe", password="loco"), "pepe")])
-    async def test_create(self, payload: UserCreate, expect: str) -> None:
-        session = AsyncMock()
-        session.execute.return_value = expect
-        assert await UserRepository().create(session, obj_in=payload) == expect
+        session.execute.return_value = result
+        assert await UserRepository(session).create(obj_in=payload) == expect.name
 
     async def test_remove(self) -> None:
         session = AsyncMock()
         session.execute.return_value = "expect"
-        assert await UserRepository().remove(session, name="sandwich") is None
+        assert await UserRepository(session).remove(user=User(name="pepe", password="loco")) is None
 
     @mark.parametrize(["name", "payload"], [("pepe", UserUpdate(password="noche"))])
     async def test_update(self, name: str, payload: UserUpdate) -> None:
         session = AsyncMock()
         session.execute.return_value = name
-        assert await UserRepository().update(session, name=name, obj_in=payload) is None
+
+        assert await UserRepository(session).update(name=name, obj_in=payload) is None
 
     async def test_authenticate(self) -> None:
         assert (

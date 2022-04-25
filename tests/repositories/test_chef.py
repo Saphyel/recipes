@@ -1,5 +1,5 @@
 from typing import List
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 from pytest import mark
 
@@ -10,31 +10,37 @@ from schemas import ChefCreate, ChefUpdate
 
 @mark.anyio
 class TestChefRepository:
-    @mark.parametrize(["result", "expect"], [([], []), ([{"name": "pepe"}], [Chef(name="pepe")])])
-    async def test_list(self, result: List[dict], expect: List[Chef]) -> None:
+    @mark.parametrize("expect", ([], [Chef(name="pepe")]))
+    async def test_list(self, expect: List[Chef]) -> None:
+        result = Mock()
+        result.unique.return_value.scalars.return_value.all.return_value = expect
         session = AsyncMock()
-        session.fetch_all.return_value = result
-        assert await ChefRepository().list(session) == expect
+        session.execute.return_value = result
+        assert await ChefRepository(session).list() == expect
 
-    @mark.parametrize(["param", "expect"], [("pepe", {"name": "pepe"})])
-    async def test_find(self, param: str, expect: dict) -> None:
+    @mark.parametrize(["param", "expect"], [("pepe", Chef(name="pepe"))])
+    async def test_find(self, param: str, expect: Chef) -> None:
+        result = Mock()
+        result.unique.return_value.scalar_one.return_value = expect
         session = AsyncMock()
-        session.fetch_one.return_value = expect
-        assert await ChefRepository().find(session, name=param) == Chef(**expect)
+        session.execute.return_value = result
+        assert await ChefRepository(session).find(name=param) == expect
 
     @mark.parametrize(["payload", "expect"], [(ChefCreate(name="pepe"), Chef(name="pepe"))])
     async def test_create(self, payload: ChefCreate, expect: Chef) -> None:
+        result = Mock()
+        result.scalar_one.return_value = expect.name
         session = AsyncMock()
-        session.execute.return_value = expect
-        assert await ChefRepository().create(session, obj_in=payload) == expect
+        session.execute.return_value = result
+        assert await ChefRepository(session).create(obj_in=payload) == expect.name
 
     async def test_remove(self) -> None:
         session = AsyncMock()
         session.execute.return_value = "expect"
-        assert await ChefRepository().remove(session, name="pepe") is None
+        assert await ChefRepository(session).remove(chef=Chef(name="pepe")) is None
 
     @mark.parametrize(["name", "payload"], [("pepe", ChefUpdate(reddit="espepe"))])
     async def test_update(self, name: str, payload: ChefUpdate) -> None:
         session = AsyncMock()
         session.execute.return_value = name
-        assert await ChefRepository().update(session, name=name, obj_in=payload) is None
+        assert await ChefRepository(session).update(name=name, obj_in=payload) is None

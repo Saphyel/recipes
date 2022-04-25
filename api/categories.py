@@ -1,23 +1,21 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException, Depends
-
-# from psycopg2.errors import UniqueViolation
-from pydantic.error_wrappers import ValidationError
-from sqlalchemy.exc import IntegrityError
-from starlette import status
-
 import schemas
-from db.session import database
+from fastapi import APIRouter, HTTPException, Depends
 from models.category import Category
 from repositories.category import CategoryRepository
+from sqlalchemy.exc import IntegrityError, NoResultFound
+from starlette import status
 
 router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.Category])
 async def index(repository: CategoryRepository = Depends(CategoryRepository)) -> List[Category]:
-    return await repository.list(db=database)
+    try:
+        return await repository.list()
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
 
 
 @router.post(
@@ -30,14 +28,11 @@ async def create(
     obj_in: schemas.CategoryCreate, repository: CategoryRepository = Depends(CategoryRepository)
 ) -> Category:
     try:
-        result = await repository.create(db=database, obj_in=obj_in)
-        return await repository.find(db=database, name=result)
-    except ValidationError as error:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
-    except IntegrityError as error:
-        # if error.orig == UniqueViolation:
-        #     raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Resource already exist")
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
+        return await repository.create(obj_in=obj_in)
+    except IntegrityError:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Resource already exist")
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
 
 
 @router.get(
@@ -47,9 +42,11 @@ async def create(
 )
 async def read(name: str, repository: CategoryRepository = Depends(CategoryRepository)) -> Category:
     try:
-        return await repository.find(db=database, name=name)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
+        return await repository.find(name=name)
+    except (ValueError, NoResultFound):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
 
 
 @router.delete(
@@ -59,7 +56,9 @@ async def read(name: str, repository: CategoryRepository = Depends(CategoryRepos
 )
 async def remove(name: str, repository: CategoryRepository = Depends(CategoryRepository)) -> str:
     try:
-        await repository.remove(db=database, name=name)
+        await repository.remove(category=await repository.find(name=name))
         return ""
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
+    except (ValueError, NoResultFound):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")

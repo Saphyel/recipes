@@ -1,32 +1,27 @@
 from typing import List
 
-from databases import Database
-from sqlalchemy import select, insert, delete
-
 from models.ingredient import Ingredient
 from schemas.ingredient import IngredientCreate
+from sqlalchemy import select, insert
+from .base import BaseRepository
 
 
-class IngredientRepository:
-    async def list(self, db: Database, *, offset: int = 0, limit: int = 100) -> List[Ingredient]:
+class IngredientRepository(BaseRepository):
+    async def list(self, *, offset: int = 0, limit: int = 100) -> List[Ingredient]:
         query = select(Ingredient).offset(offset).limit(limit)
-        result = await db.fetch_all(query)
-        return [Ingredient(**item) for item in result]  # type: ignore
+        result = await self.db.execute(query)
+        return result.scalars().all()
 
-    async def find(self, db: Database, *, name: str) -> Ingredient:
+    async def find(self, *, name: str) -> Ingredient:
         query = select(Ingredient).where(Ingredient.name == name)
-        result = await db.fetch_one(query)
-        if not result:
-            raise ValueError("Not found")
-        return Ingredient(**result)  # type: ignore
+        result = await self.db.execute(query)
+        return result.scalar_one()
 
-    async def create(self, db: Database, *, obj_in: IngredientCreate) -> str:
+    async def create(self, *, obj_in: IngredientCreate) -> str:
         query = insert(Ingredient).values(**obj_in.__dict__).returning(Ingredient.name)
-        result = await db.execute(query)
-        return result
+        result = await self.db.execute(query)
+        return result.scalar_one()
 
-    async def remove(self, db: Database, *, name: str) -> None:
-        query = delete(Ingredient).where(Ingredient.name == name).returning(Ingredient.name)
-        result = await db.execute(query)
-        if not result:
-            raise ValueError("Not found")
+    async def remove(self, *, ingredient: Ingredient) -> None:
+        await self.db.delete(ingredient)
+        await self.db.commit()

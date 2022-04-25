@@ -1,17 +1,14 @@
 from datetime import timedelta, datetime
 from typing import Optional
 
+from core.config import settings, reusable_oauth2
 from fastapi import Depends, HTTPException
 from jose import jwt
-from pydantic import ValidationError
-from sqlalchemy.exc import NoResultFound
-from starlette import status
-
-from core.config import settings, reusable_oauth2
-from db.session import database
 from models.user import User
 from repositories.user import UserRepository
 from schemas import TokenPayload
+from sqlalchemy.exc import NoResultFound
+from starlette import status
 
 
 def create_access_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
@@ -30,9 +27,9 @@ async def get_current_user(
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         token_data = TokenPayload(**payload)
-        user = await repository.find(database, name=token_data.name)
+        user = await repository.find(name=token_data.name)
         return user
-    except (jwt.JWTError, ValidationError):
+    except (jwt.JWTError, NoResultFound):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Could not validate credentials")
-    except NoResultFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
