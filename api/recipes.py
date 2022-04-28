@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Union
 
 import schemas
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from models.recipe import Recipe
 from models.recipe_ingredient import RecipeIngredient
 from repositories.recipe import RecipeRepository
@@ -13,11 +14,11 @@ router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.Recipe])
-async def index(repository: RecipeRepository = Depends(RecipeRepository)) -> List[Recipe]:
+async def index(repository: RecipeRepository = Depends(RecipeRepository)) -> Union[List[Recipe], JSONResponse]:
     try:
         return await repository.list()
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
 
 
 @router.post(
@@ -26,14 +27,16 @@ async def index(repository: RecipeRepository = Depends(RecipeRepository)) -> Lis
     response_model=schemas.Recipe,
     responses={400: {"description": "Invalid request", "model": schemas.HttpError}},
 )
-async def create(obj_in: schemas.RecipeCreate, repository: RecipeRepository = Depends(RecipeRepository)) -> Recipe:
+async def create(
+    obj_in: schemas.RecipeCreate, repository: RecipeRepository = Depends(RecipeRepository)
+) -> Union[Recipe, JSONResponse]:
     try:
         result = await repository.create(obj_in=obj_in)
         return await repository.find(title=result)
     except IntegrityError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Integrity error")
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content="Integrity error")
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
 
 
 @router.get(
@@ -41,13 +44,13 @@ async def create(obj_in: schemas.RecipeCreate, repository: RecipeRepository = De
     response_model=schemas.Recipe,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def read(title: str, repository: RecipeRepository = Depends(RecipeRepository)) -> Recipe:
+async def read(title: str, repository: RecipeRepository = Depends(RecipeRepository)) -> Union[Recipe, JSONResponse]:
     try:
         return await repository.find(title=title)
     except (ValueError, NoResultFound):
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
 
 
 @router.patch(
@@ -60,16 +63,16 @@ async def read(title: str, repository: RecipeRepository = Depends(RecipeReposito
 )
 async def update(
     title: str, obj_in: schemas.RecipeUpdate, repository: RecipeRepository = Depends(RecipeRepository)
-) -> Recipe:
+) -> Union[Recipe, JSONResponse]:
     try:
         await repository.update(title=title, obj_in=obj_in)
         return await repository.find(title=title)
     except (ValueError, NoResultFound):
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
     except IntegrityError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Integrity error")
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content="Integrity error")
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
 
 
 @router.delete(
@@ -77,24 +80,24 @@ async def update(
     status_code=status.HTTP_204_NO_CONTENT,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def remove(title: str, repository: RecipeRepository = Depends(RecipeRepository)) -> str:
+async def remove(title: str, repository: RecipeRepository = Depends(RecipeRepository)) -> Union[None, JSONResponse]:
     try:
         await repository.remove(recipe=await repository.find(title=title))
-        return ""
+        return None
     except (ValueError, NoResultFound):
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
 
 
 @router.get("/{title}/ingredients", response_model=List[schemas.RecipeIngredient])
 async def ingredients_index(
     title: str, repository: RecipeIngredientRepository = Depends(RecipeIngredientRepository)
-) -> List[RecipeIngredient]:
+) -> Union[List[RecipeIngredient], JSONResponse]:
     try:
         return await repository.list(recipe_title=title)
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
 
 
 @router.delete(
@@ -104,11 +107,11 @@ async def ingredients_index(
 )
 async def ingredients_remove(
     title: str, name: str, repository: RecipeIngredientRepository = Depends(RecipeIngredientRepository)
-) -> str:
+) -> Union[None, JSONResponse]:
     try:
         await repository.remove(recipe_title=title, ingredient_name=name)
-        return ""
+        return None
     except (ValueError, NoResultFound):
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")

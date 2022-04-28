@@ -1,13 +1,14 @@
-from typing import List
+from typing import List, Union
 
 import schemas
-from fastapi import APIRouter, Depends, HTTPException
-
-# from core.security import get_current_user
+from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from models.user import User
 from repositories.user import UserRepository
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from starlette import status
+
+# from core.security import get_current_user
 
 router = APIRouter()
 
@@ -20,11 +21,11 @@ router = APIRouter()
 async def index(
     # current_user: schemas.User = Depends(get_current_user),
     repository: UserRepository = Depends(UserRepository),
-) -> List[User]:
+) -> Union[List[User], JSONResponse]:
     try:
         return await repository.list()
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
 
 
 @router.post(
@@ -40,14 +41,14 @@ async def create(
     obj_in: schemas.UserCreate,
     # current_user: schemas.User = Depends(get_current_user),
     repository: UserRepository = Depends(UserRepository),
-) -> User:
+) -> Union[User, JSONResponse]:
     try:
         result = await repository.create(obj_in=obj_in)
         return await repository.find(name=result)
     except IntegrityError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Resource already exist")
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content="Resource already exist")
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
 
 
 @router.get(
@@ -55,13 +56,13 @@ async def create(
     response_model=schemas.User,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def read(name: str, repository: UserRepository = Depends(UserRepository)) -> User:
+async def read(name: str, repository: UserRepository = Depends(UserRepository)) -> Union[User, JSONResponse]:
     try:
         return await repository.find(name=name)
     except (ValueError, NoResultFound):
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
 
 
 @router.delete(
@@ -76,11 +77,11 @@ async def remove(
     name: str,
     # current_user: schemas.User = Depends(get_current_user),
     repository: UserRepository = Depends(UserRepository),
-) -> str:
+) -> Union[None, JSONResponse]:
     try:
         await repository.remove(user=await repository.find(name=name))
         return ""
     except (ValueError, NoResultFound):
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")

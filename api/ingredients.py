@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Union
 
 import schemas
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from models.ingredient import Ingredient
 from repositories.ingredient import IngredientRepository
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -11,11 +12,13 @@ router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.Ingredient])
-async def index(repository: IngredientRepository = Depends(IngredientRepository)) -> List[Ingredient]:
+async def index(
+    repository: IngredientRepository = Depends(IngredientRepository),
+) -> Union[List[Ingredient], JSONResponse]:
     try:
         return await repository.list()
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
 
 
 @router.post(
@@ -26,14 +29,14 @@ async def index(repository: IngredientRepository = Depends(IngredientRepository)
 )
 async def create(
     obj_in: schemas.IngredientCreate, repository: IngredientRepository = Depends(IngredientRepository)
-) -> Ingredient:
+) -> Union[Ingredient, JSONResponse]:
     try:
         result = await repository.create(obj_in=obj_in)
         return await repository.find(name=result)
     except IntegrityError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Resource already exist")
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content="Resource already exist")
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
 
 
 @router.get(
@@ -41,13 +44,15 @@ async def create(
     response_model=schemas.Ingredient,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def read(name: str, repository: IngredientRepository = Depends(IngredientRepository)) -> Ingredient:
+async def read(
+    name: str, repository: IngredientRepository = Depends(IngredientRepository)
+) -> Union[Ingredient, JSONResponse]:
     try:
         return await repository.find(name=name)
     except (ValueError, NoResultFound):
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
 
 
 @router.delete(
@@ -55,11 +60,13 @@ async def read(name: str, repository: IngredientRepository = Depends(IngredientR
     status_code=status.HTTP_204_NO_CONTENT,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def remove(name: str, repository: IngredientRepository = Depends(IngredientRepository)) -> str:
+async def remove(
+    name: str, repository: IngredientRepository = Depends(IngredientRepository)
+) -> Union[None, JSONResponse]:
     try:
         await repository.remove(ingredient=await repository.find(name=name))
-        return ""
+        return None
     except (ValueError, NoResultFound):
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Resource not found")
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "What have you done??")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
