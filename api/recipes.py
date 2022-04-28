@@ -2,6 +2,7 @@ from typing import List, Union
 
 import schemas
 from fastapi import APIRouter, Depends
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from models.recipe import Recipe
 from models.recipe_ingredient import RecipeIngredient
@@ -18,7 +19,10 @@ async def index(repository: RecipeRepository = Depends(RecipeRepository)) -> Uni
     try:
         return await repository.list()
     except Exception:
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
+        )
 
 
 @router.post(
@@ -34,9 +38,15 @@ async def create(
         result = await repository.create(obj_in=obj_in)
         return await repository.find(title=result)
     except IntegrityError:
-        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content="Integrity error")
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=jsonable_encoder(schemas.HttpError(detail="Integrity error")),
+        )
     except Exception:
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
+        )
 
 
 @router.get(
@@ -48,9 +58,15 @@ async def read(title: str, repository: RecipeRepository = Depends(RecipeReposito
     try:
         return await repository.find(title=title)
     except (ValueError, NoResultFound):
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
+        )
     except Exception:
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
+        )
 
 
 @router.patch(
@@ -68,11 +84,20 @@ async def update(
         await repository.update(title=title, obj_in=obj_in)
         return await repository.find(title=title)
     except (ValueError, NoResultFound):
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
+        )
     except IntegrityError:
-        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content="Integrity error")
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=jsonable_encoder(schemas.HttpError(detail="Integrity error")),
+        )
     except Exception:
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
+        )
 
 
 @router.delete(
@@ -85,9 +110,15 @@ async def remove(title: str, repository: RecipeRepository = Depends(RecipeReposi
         await repository.remove(recipe=await repository.find(title=title))
         return None
     except (ValueError, NoResultFound):
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
+        )
     except Exception:
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
+        )
 
 
 @router.get("/{title}/ingredients", response_model=List[schemas.RecipeIngredient])
@@ -97,7 +128,10 @@ async def ingredients_index(
     try:
         return await repository.list(recipe_title=title)
     except Exception:
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
+        )
 
 
 @router.delete(
@@ -112,6 +146,12 @@ async def ingredients_remove(
         await repository.remove(recipe_title=title, ingredient_name=name)
         return None
     except (ValueError, NoResultFound):
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
+        )
     except Exception:
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
+        )

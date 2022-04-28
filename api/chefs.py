@@ -2,6 +2,7 @@ from typing import List, Union
 
 import schemas
 from fastapi import APIRouter, Depends
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from models.chef import Chef
 from repositories.chef import ChefRepository
@@ -16,7 +17,10 @@ async def index(repository: ChefRepository = Depends(ChefRepository)) -> Union[L
     try:
         return await repository.list()
     except Exception:
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
+        )
 
 
 @router.post(
@@ -32,9 +36,15 @@ async def create(
         result = await repository.create(obj_in=obj_in)
         return await repository.find(name=result)
     except IntegrityError:
-        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content="Resource already exist")
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=jsonable_encoder(schemas.HttpError(detail="Resource already exist")),
+        )
     except Exception:
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
+        )
 
 
 @router.get(
@@ -46,9 +56,15 @@ async def read(name: str, repository: ChefRepository = Depends(ChefRepository)) 
     try:
         return await repository.find(name=name)
     except (ValueError, NoResultFound):
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
+        )
     except Exception:
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
+        )
 
 
 @router.patch(
@@ -66,9 +82,15 @@ async def update(
         await repository.update(name=name, obj_in=obj_in)
         return await repository.find(name=name)
     except (ValueError, NoResultFound):
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
+        )
     except Exception:
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
+        )
 
 
 @router.delete(
@@ -81,6 +103,12 @@ async def remove(name: str, repository: ChefRepository = Depends(ChefRepository)
         await repository.remove(chef=await repository.find(name=name))
         return None
     except (ValueError, NoResultFound):
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="Resource not found")
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
+        )
     except Exception:
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content="What have you done??")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
+        )
