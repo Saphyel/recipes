@@ -1,3 +1,4 @@
+import logging
 from typing import Union
 
 from core import security
@@ -10,6 +11,7 @@ from schemas import Token, HttpError
 from sqlalchemy.exc import NoResultFound
 from starlette import status
 
+logger = logging.getLogger(f"recipes.{__name__}")
 router = APIRouter()
 
 
@@ -34,7 +36,8 @@ async def login(
             status_code=status.HTTP_400_BAD_REQUEST,
             content=jsonable_encoder(HttpError(detail="Incorrect name or password")),
         )
-    except Exception:
+    except Exception as error:
+        logger.error("Server error", extra={"error": error})
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(HttpError(detail="What have you done??")),

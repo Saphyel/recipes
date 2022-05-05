@@ -1,3 +1,4 @@
+import logging
 from typing import List, Union
 
 import schemas
@@ -11,6 +12,7 @@ from repositories.recipe_ingredient import RecipeIngredientRepository
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from starlette import status
 
+logger = logging.getLogger(f"recipes.{__name__}")
 router = APIRouter()
 
 
@@ -18,7 +20,8 @@ router = APIRouter()
 async def index(repository: RecipeRepository = Depends(RecipeRepository)) -> Union[List[Recipe], JSONResponse]:
     try:
         return await repository.list()
-    except Exception:
+    except Exception as error:
+        logger.error("Server error", extra={"error": error})
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
@@ -42,7 +45,8 @@ async def create(
             status_code=status.HTTP_400_BAD_REQUEST,
             content=jsonable_encoder(schemas.HttpError(detail="Integrity error")),
         )
-    except Exception:
+    except Exception as error:
+        logger.error("Server error", extra={"error": error})
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
@@ -62,7 +66,8 @@ async def read(title: str, repository: RecipeRepository = Depends(RecipeReposito
             status_code=status.HTTP_404_NOT_FOUND,
             content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
         )
-    except Exception:
+    except Exception as error:
+        logger.error("Server error", extra={"error": error})
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
@@ -93,7 +98,8 @@ async def update(
             status_code=status.HTTP_400_BAD_REQUEST,
             content=jsonable_encoder(schemas.HttpError(detail="Integrity error")),
         )
-    except Exception:
+    except Exception as error:
+        logger.error("Server error", extra={"error": error})
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
@@ -114,7 +120,8 @@ async def remove(title: str, repository: RecipeRepository = Depends(RecipeReposi
             status_code=status.HTTP_404_NOT_FOUND,
             content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
         )
-    except Exception:
+    except Exception as error:
+        logger.error("Server error", extra={"error": error})
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
@@ -127,7 +134,8 @@ async def ingredients_index(
 ) -> Union[List[RecipeIngredient], JSONResponse]:
     try:
         return await repository.list(recipe_title=title)
-    except Exception:
+    except Exception as error:
+        logger.error("Server error", extra={"error": error})
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
@@ -150,7 +158,8 @@ async def ingredients_remove(
             status_code=status.HTTP_404_NOT_FOUND,
             content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
         )
-    except Exception:
+    except Exception as error:
+        logger.error("Server error", extra={"error": error})
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),

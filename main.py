@@ -1,10 +1,10 @@
+import api
+import web
+from core.config import settings
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
-import api
-import web
-from core.config import settings
 
 app = FastAPI(title=settings.PROJECT_NAME)
 app.add_middleware(GZipMiddleware)

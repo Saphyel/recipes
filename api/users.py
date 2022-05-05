@@ -1,3 +1,4 @@
+import logging
 from typing import List, Union
 
 import schemas
@@ -11,6 +12,7 @@ from starlette import status
 
 # from core.security import get_current_user
 
+logger = logging.getLogger(f"recipes.{__name__}")
 router = APIRouter()
 
 
@@ -25,7 +27,8 @@ async def index(
 ) -> Union[List[User], JSONResponse]:
     try:
         return await repository.list()
-    except Exception:
+    except Exception as error:
+        logger.error("Server error", extra={"error": error})
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
@@ -54,7 +57,8 @@ async def create(
             status_code=status.HTTP_400_BAD_REQUEST,
             content=jsonable_encoder(schemas.HttpError(detail="Resource already exist")),
         )
-    except Exception:
+    except Exception as error:
+        logger.error("Server error", extra={"error": error})
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
@@ -74,7 +78,8 @@ async def read(name: str, repository: UserRepository = Depends(UserRepository)) 
             status_code=status.HTTP_404_NOT_FOUND,
             content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
         )
-    except Exception:
+    except Exception as error:
+        logger.error("Server error", extra={"error": error})
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
@@ -96,13 +101,14 @@ async def remove(
 ) -> Union[None, JSONResponse]:
     try:
         await repository.remove(user=await repository.find(name=name))
-        return ""
+        return None
     except (ValueError, NoResultFound):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
         )
-    except Exception:
+    except Exception as error:
+        logger.error("Server error", extra={"error": error})
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
