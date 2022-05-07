@@ -1,5 +1,5 @@
 import logging
-from typing import List, Union
+from typing import List
 
 import schemas
 from fastapi import APIRouter, Depends
@@ -17,7 +17,7 @@ router = APIRouter()
 @router.get("", response_model=List[schemas.Ingredient])
 async def index(
     repository: IngredientRepository = Depends(IngredientRepository),
-) -> Union[List[Ingredient], JSONResponse]:
+) -> List[Ingredient] | JSONResponse:
     try:
         return await repository.list()
     except Exception as error:
@@ -36,7 +36,7 @@ async def index(
 )
 async def create(
     obj_in: schemas.IngredientCreate, repository: IngredientRepository = Depends(IngredientRepository)
-) -> Union[Ingredient, JSONResponse]:
+) -> Ingredient | JSONResponse:
     try:
         result = await repository.create(obj_in=obj_in)
         return await repository.find(name=result)
@@ -60,7 +60,7 @@ async def create(
 )
 async def read(
     name: str, repository: IngredientRepository = Depends(IngredientRepository)
-) -> Union[Ingredient, JSONResponse]:
+) -> Ingredient | JSONResponse:
     try:
         return await repository.find(name=name)
     except (ValueError, NoResultFound):
@@ -81,9 +81,7 @@ async def read(
     status_code=status.HTTP_204_NO_CONTENT,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def remove(
-    name: str, repository: IngredientRepository = Depends(IngredientRepository)
-) -> Union[None, JSONResponse]:
+async def remove(name: str, repository: IngredientRepository = Depends(IngredientRepository)) -> None | JSONResponse:
     try:
         await repository.remove(ingredient=await repository.find(name=name))
         return None

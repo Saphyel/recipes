@@ -1,5 +1,5 @@
 import logging
-from typing import List, Union
+from typing import List
 
 import schemas
 from fastapi import APIRouter, Depends
@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.Category])
-async def index(repository: CategoryRepository = Depends(CategoryRepository)) -> Union[List[Category], JSONResponse]:
+async def index(repository: CategoryRepository = Depends(CategoryRepository)) -> List[Category] | JSONResponse:
     try:
         return await repository.list()
     except Exception as error:
@@ -35,7 +35,7 @@ async def index(repository: CategoryRepository = Depends(CategoryRepository)) ->
 )
 async def create(
     obj_in: schemas.CategoryCreate, repository: CategoryRepository = Depends(CategoryRepository)
-) -> Union[Category, JSONResponse]:
+) -> Category | JSONResponse:
     try:
         return await repository.create(obj_in=obj_in)
     except IntegrityError:
@@ -56,9 +56,7 @@ async def create(
     response_model=schemas.Category,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def read(
-    name: str, repository: CategoryRepository = Depends(CategoryRepository)
-) -> Union[Category, JSONResponse]:
+async def read(name: str, repository: CategoryRepository = Depends(CategoryRepository)) -> Category | JSONResponse:
     try:
         return await repository.find(name=name)
     except (ValueError, NoResultFound):
@@ -79,7 +77,7 @@ async def read(
     status_code=status.HTTP_204_NO_CONTENT,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def remove(name: str, repository: CategoryRepository = Depends(CategoryRepository)) -> Union[None, JSONResponse]:
+async def remove(name: str, repository: CategoryRepository = Depends(CategoryRepository)) -> None | JSONResponse:
     try:
         await repository.remove(category=await repository.find(name=name))
         return None

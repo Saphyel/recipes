@@ -1,5 +1,5 @@
 import logging
-from typing import List, Union
+from typing import List
 
 import schemas
 from fastapi import APIRouter, Depends
@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.Chef])
-async def index(repository: ChefRepository = Depends(ChefRepository)) -> Union[List[Chef], JSONResponse]:
+async def index(repository: ChefRepository = Depends(ChefRepository)) -> List[Chef] | JSONResponse:
     try:
         return await repository.list()
     except Exception as error:
@@ -35,7 +35,7 @@ async def index(repository: ChefRepository = Depends(ChefRepository)) -> Union[L
 )
 async def create(
     obj_in: schemas.ChefCreate, repository: ChefRepository = Depends(ChefRepository)
-) -> Union[Chef, JSONResponse]:
+) -> Chef | JSONResponse:
     try:
         result = await repository.create(obj_in=obj_in)
         return await repository.find(name=result)
@@ -57,7 +57,7 @@ async def create(
     response_model=schemas.Chef,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def read(name: str, repository: ChefRepository = Depends(ChefRepository)) -> Union[Chef, JSONResponse]:
+async def read(name: str, repository: ChefRepository = Depends(ChefRepository)) -> Chef | JSONResponse:
     try:
         return await repository.find(name=name)
     except (ValueError, NoResultFound):
@@ -83,7 +83,7 @@ async def read(name: str, repository: ChefRepository = Depends(ChefRepository)) 
 )
 async def update(
     name: str, obj_in: schemas.ChefUpdate, repository: ChefRepository = Depends(ChefRepository)
-) -> Union[Chef, JSONResponse]:
+) -> Chef | JSONResponse:
     try:
         await repository.update(name=name, obj_in=obj_in)
         return await repository.find(name=name)
@@ -105,7 +105,7 @@ async def update(
     status_code=status.HTTP_204_NO_CONTENT,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def remove(name: str, repository: ChefRepository = Depends(ChefRepository)) -> Union[None, JSONResponse]:
+async def remove(name: str, repository: ChefRepository = Depends(ChefRepository)) -> None | JSONResponse:
     try:
         await repository.remove(chef=await repository.find(name=name))
         return None

@@ -1,5 +1,4 @@
 import logging
-from typing import Union
 
 from core import security
 from fastapi import APIRouter, Depends
@@ -22,7 +21,7 @@ router = APIRouter()
 )
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(), user=None, repository: UserRepository = Depends(UserRepository)
-) -> Union[dict, JSONResponse]:
+) -> dict | JSONResponse:
     try:
         user = await repository.find(name=form_data.username)
         if not await repository.authenticate(db_obj=user, password=form_data.password):

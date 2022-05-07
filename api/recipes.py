@@ -1,5 +1,5 @@
 import logging
-from typing import List, Union
+from typing import List
 
 import schemas
 from fastapi import APIRouter, Depends
@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=List[schemas.Recipe])
-async def index(repository: RecipeRepository = Depends(RecipeRepository)) -> Union[List[Recipe], JSONResponse]:
+async def index(repository: RecipeRepository = Depends(RecipeRepository)) -> List[Recipe] | JSONResponse:
     try:
         return await repository.list()
     except Exception as error:
@@ -36,7 +36,7 @@ async def index(repository: RecipeRepository = Depends(RecipeRepository)) -> Uni
 )
 async def create(
     obj_in: schemas.RecipeCreate, repository: RecipeRepository = Depends(RecipeRepository)
-) -> Union[Recipe, JSONResponse]:
+) -> Recipe | JSONResponse:
     try:
         result = await repository.create(obj_in=obj_in)
         return await repository.find(title=result)
@@ -58,7 +58,7 @@ async def create(
     response_model=schemas.Recipe,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def read(title: str, repository: RecipeRepository = Depends(RecipeRepository)) -> Union[Recipe, JSONResponse]:
+async def read(title: str, repository: RecipeRepository = Depends(RecipeRepository)) -> Recipe | JSONResponse:
     try:
         return await repository.find(title=title)
     except (ValueError, NoResultFound):
@@ -84,7 +84,7 @@ async def read(title: str, repository: RecipeRepository = Depends(RecipeReposito
 )
 async def update(
     title: str, obj_in: schemas.RecipeUpdate, repository: RecipeRepository = Depends(RecipeRepository)
-) -> Union[Recipe, JSONResponse]:
+) -> Recipe | JSONResponse:
     try:
         await repository.update(title=title, obj_in=obj_in)
         return await repository.find(title=title)
@@ -111,7 +111,7 @@ async def update(
     status_code=status.HTTP_204_NO_CONTENT,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def remove(title: str, repository: RecipeRepository = Depends(RecipeRepository)) -> Union[None, JSONResponse]:
+async def remove(title: str, repository: RecipeRepository = Depends(RecipeRepository)) -> None | JSONResponse:
     try:
         await repository.remove(recipe=await repository.find(title=title))
         return None
@@ -131,7 +131,7 @@ async def remove(title: str, repository: RecipeRepository = Depends(RecipeReposi
 @router.get("/{title}/ingredients", response_model=List[schemas.RecipeIngredient])
 async def ingredients_index(
     title: str, repository: RecipeIngredientRepository = Depends(RecipeIngredientRepository)
-) -> Union[List[RecipeIngredient], JSONResponse]:
+) -> List[RecipeIngredient] | JSONResponse:
     try:
         return await repository.list(recipe_title=title)
     except Exception as error:
@@ -149,7 +149,7 @@ async def ingredients_index(
 )
 async def ingredients_remove(
     title: str, name: str, repository: RecipeIngredientRepository = Depends(RecipeIngredientRepository)
-) -> Union[None, JSONResponse]:
+) -> None | JSONResponse:
     try:
         await repository.remove(recipe_title=title, ingredient_name=name)
         return None

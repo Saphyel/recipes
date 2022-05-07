@@ -1,5 +1,5 @@
 import logging
-from typing import List, Union
+from typing import List
 
 import schemas
 from fastapi import APIRouter, Depends
@@ -24,7 +24,7 @@ router = APIRouter()
 async def index(
     # current_user: schemas.User = Depends(get_current_user),
     repository: UserRepository = Depends(UserRepository),
-) -> Union[List[User], JSONResponse]:
+) -> List[User] | JSONResponse:
     try:
         return await repository.list()
     except Exception as error:
@@ -48,7 +48,7 @@ async def create(
     obj_in: schemas.UserCreate,
     # current_user: schemas.User = Depends(get_current_user),
     repository: UserRepository = Depends(UserRepository),
-) -> Union[User, JSONResponse]:
+) -> User | JSONResponse:
     try:
         result = await repository.create(obj_in=obj_in)
         return await repository.find(name=result)
@@ -70,7 +70,7 @@ async def create(
     response_model=schemas.User,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def read(name: str, repository: UserRepository = Depends(UserRepository)) -> Union[User, JSONResponse]:
+async def read(name: str, repository: UserRepository = Depends(UserRepository)) -> User | JSONResponse:
     try:
         return await repository.find(name=name)
     except (ValueError, NoResultFound):
@@ -98,7 +98,7 @@ async def remove(
     name: str,
     # current_user: schemas.User = Depends(get_current_user),
     repository: UserRepository = Depends(UserRepository),
-) -> Union[None, JSONResponse]:
+) -> None | JSONResponse:
     try:
         await repository.remove(user=await repository.find(name=name))
         return None
