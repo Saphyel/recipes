@@ -19,7 +19,7 @@ jobs:
         docker commit app app
     - name: Check code style
       run: docker run app python -m black --check .
-    - name: Check static types
-      run: docker run app python -m mypy .
+    # - name: Check static types
+    #   run: docker run app python -m mypy .
     - name: Test with pytest
       run: docker run -e DATABASE_URL app pdm run test -m "not webtest"

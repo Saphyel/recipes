@@ -2,9 +2,7 @@ import logging
 from typing import List
 
 import schemas
-from fastapi import APIRouter, Depends
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException
 from models.user import User
 from repositories.user import UserRepository
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -24,15 +22,12 @@ router = APIRouter()
 async def index(
     # current_user: schemas.User = Depends(get_current_user),
     repository: UserRepository = Depends(UserRepository),
-) -> List[User] | JSONResponse:
+) -> List[User]:
     try:
         return await repository.list()
     except Exception as error:
         logger.error("Server error", extra={"error": error})
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="What have you done??")
 
 
 @router.post(
@@ -48,21 +43,15 @@ async def create(
     obj_in: schemas.UserCreate,
     # current_user: schemas.User = Depends(get_current_user),
     repository: UserRepository = Depends(UserRepository),
-) -> User | JSONResponse:
+) -> User:
     try:
         result = await repository.create(obj_in=obj_in)
         return await repository.find(name=result)
     except IntegrityError:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content=jsonable_encoder(schemas.HttpError(detail="Resource already exist")),
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Resource already exist")
     except Exception as error:
         logger.error("Server error", extra={"error": error})
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="What have you done??")
 
 
 @router.get(
@@ -70,20 +59,14 @@ async def create(
     response_model=schemas.User,
     responses={404: {"description": "Resource not found", "model": schemas.HttpError}},
 )
-async def read(name: str, repository: UserRepository = Depends(UserRepository)) -> User | JSONResponse:
+async def read(name: str, repository: UserRepository = Depends(UserRepository)) -> User:
     try:
         return await repository.find(name=name)
     except (ValueError, NoResultFound):
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
     except Exception as error:
         logger.error("Server error", extra={"error": error})
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="What have you done??")
 
 
 @router.delete(
@@ -98,18 +81,12 @@ async def remove(
     name: str,
     # current_user: schemas.User = Depends(get_current_user),
     repository: UserRepository = Depends(UserRepository),
-) -> None | JSONResponse:
+) -> None:
     try:
         await repository.remove(user=await repository.find(name=name))
         return None
     except (ValueError, NoResultFound):
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND,
-            content=jsonable_encoder(schemas.HttpError(detail="Resource not found")),
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
     except Exception as error:
         logger.error("Server error", extra={"error": error})
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=jsonable_encoder(schemas.HttpError(detail="What have you done??")),
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="What have you done??")
