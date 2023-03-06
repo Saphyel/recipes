@@ -6,7 +6,7 @@ services:
     ports: [ "8081:80" ]
     volumes:
       - ./:/app/
-    command: pdm run server
+    command: uvicorn main:app --host 0.0.0.0 --port $PORT --reload
     env_file: [ .env ]
 
   db:
@@ -17,6 +17,20 @@ services:
     environment:
       POSTGRES_PASSWORD: password
     links: [ webapp ]
+
+#  locust:
+#    image: locustio/locust
+#    ports: [ "8089:8089" ]
+#    volumes:
+#      - ./:/mnt/locust
+#    command: -f /mnt/locust/locustfile.py --master -H http://webapp:80
+#
+#  locust_worker:
+#    image: locustio/locust
+#    volumes:
+#      - ./:/mnt/locust
+#    command: -f /mnt/locust/locustfile.py --worker --master-host locust
+#    links: [ locust ]
 
 volumes:
   pgdata:

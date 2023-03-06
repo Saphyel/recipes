@@ -15,11 +15,11 @@ jobs:
       run: docker build -t local .
     - name: Install dev tools
       run: |
-        docker run --name app local pdm install
+        docker run --name app local pip install .[dev]
         docker commit app app
     - name: Check code style
-      run: docker run app python -m black --check .
+      run: docker run app black --check .
     # - name: Check static types
-    #   run: docker run app python -m mypy .
+    #   run: docker run app mypy .
     - name: Test with pytest
-      run: docker run -e DATABASE_URL app pdm run test -m "not webtest"
+      run: docker run -e DATABASE_URL app coverage run -m pytest tests/ --junitxml=junit.xml -m "not webtest"

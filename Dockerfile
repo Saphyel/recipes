@@ -1,12 +1,19 @@
-FROM saphyel/python:pdm
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PIP_NO_CACHE_DIR=1
+ENV PIP_ROOT_USER_ACTION=ignore
 
 ENV PORT 80
 EXPOSE $PORT
 WORKDIR /app
 
-COPY pdm.lock pyproject.toml /app/
-RUN pdm install --prod
+COPY pyproject.toml /app/
+RUN pip install .
 
 COPY . /app
 
-CMD python -m uvicorn main:app --host 0.0.0.0 --port $PORT
+CMD uvicorn main:app --host 0.0.0.0 --port $PORT

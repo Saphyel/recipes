@@ -38,7 +38,6 @@ homepage = ""
 
 [tool]
 [tool.pdm.scripts]
-server = "uvicorn main:app --host 0.0.0.0 --port $PORT --reload"
 test = "coverage run -m pytest tests/ --junitxml=junit.xml"
 post_test = "coverage report -m"
 
